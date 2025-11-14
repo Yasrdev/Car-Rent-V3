@@ -1,0 +1,543 @@
+// == SWIPER EVENT == //
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Swiper
+    const swiper = new Swiper('.swiper', {
+      slidesPerView: 1,
+      spaceBetween: 30,
+      loop: true,
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      breakpoints: {
+        640: {
+          slidesPerView: 1,
+        },
+        768: {
+          slidesPerView: 2,
+        },
+        1024: {
+          slidesPerView: 3,
+        },
+      },
+    });
+    
+  });
+
+  //== Effet du bordure pour le menu ==//
+  const navbar = document.querySelector('.navbar');
+  const logo = document.getElementById('logo')
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) { // si on a scrollé de plus de 50px
+        navbar.classList.add('active');
+        logo.classList.add('active');
+      } else {
+        navbar.classList.remove('active');
+        logo.classList.remove('active');
+      }
+
+    console.log(navbar.classList);
+    });
+
+
+//== afficher le menu en Mobile ==//
+const burger = document.getElementById('burger');
+const fullscreenMenu = document.getElementById('fullscreenMenu');
+
+burger.addEventListener('click', () => {
+    fullscreenMenu.classList.toggle('active');
+   if (fullscreenMenu.classList.contains('active')) {
+    burger.innerHTML = '<i class="fas fa-times"></i>';
+  } else {
+    burger.innerHTML = '<i class="fas fa-bars"></i>';
+  }
+});
+
+
+//== Loader au démarrage de la page ==//
+ const loader = document.getElementById("loader");
+    const content = document.getElementById("content");
+
+    // Masquer le loader après quelques secondes
+    setTimeout(() => {
+      loader.style.opacity = "0";
+      loader.style.transition = "opacity 1s ease";
+      setTimeout(() => {
+        loader.style.display = "none";
+        content.style.display = "block";
+        document.body.style.overflow = "auto";
+      }, 1000);
+    }, 3500);
+
+
+// Gestion de l'affichage de la card
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileDropdown = document.querySelector('.custom-dropdown-mobile');
+    const dropdownCard = document.querySelector('.custom-dropdown-card');
+    
+    mobileDropdown.addEventListener('click', function() {
+        dropdownCard.classList.toggle('show-card');
+        // Réinitialiser l'affichage des icônes quand la card s'ouvre
+        if (dropdownCard.classList.contains('show-card')) {
+            setTimeout(() => {
+                forceIconsDisplay();
+            }, 100);
+        }
+    });
+    
+    // Fermer la card en cliquant à l'extérieur
+    document.addEventListener('click', function(event) {
+        if (!mobileDropdown.contains(event.target) && !dropdownCard.contains(event.target)) {
+            dropdownCard.classList.remove('show-card');
+        }
+    });
+});
+
+// Fonction pour forcer l'affichage de toutes les icônes
+function forceIconsDisplay() {
+    const dropdowns = document.querySelectorAll('.custom-dropdown-card .custom-dropdown');
+    dropdowns.forEach(dropdown => {
+        const options = dropdown.querySelectorAll('ul li');
+        options.forEach(option => {
+            const icon = option.querySelector('i');
+            if (icon) {
+                icon.style.display = 'inline-block';
+                icon.style.opacity = '0.3'; // Icônes non sélectionnées en transparence
+            }
+        });
+        
+        // Première option en pleine opacité
+        const firstOption = options[0];
+        const firstIcon = firstOption.querySelector('i');
+        if (firstIcon) {
+            firstIcon.style.opacity = '1';
+        }
+    });
+}
+
+// Filter Custom Drop down
+function initDropdown(dropdown) {
+    const label = dropdown.querySelector('label');
+    const options = dropdown.querySelectorAll('ul li');
+    const checkbox = dropdown.querySelector('input');
+
+    // Vérifier si le dropdown a des options
+    if (options.length > 0 && label) {
+        // S'assurer que toutes les icônes sont visibles
+        options.forEach(option => {
+            const icon = option.querySelector('i');
+            if (icon) {
+                icon.style.display = 'inline-block';
+                icon.style.opacity = '0.3';
+            }
+        });
+
+        // Sélection par défaut : première option
+        const firstOption = options[0];
+        const firstIcon = firstOption.querySelector('i');
+        if (firstIcon) {
+            firstIcon.style.opacity = '1';
+        }
+        label.textContent = firstOption.childNodes[0].textContent.trim();
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                // Mettre à jour le label
+                label.textContent = option.childNodes[0].textContent.trim();
+
+                // Fermer le dropdown
+                checkbox.checked = false;
+
+                // Mettre à jour l'opacité des icônes
+                options.forEach(opt => {
+                    const optIcon = opt.querySelector('i');
+                    if (optIcon) {
+                        optIcon.style.opacity = '0.3';
+                    }
+                });
+                
+                // Icône sélectionnée en pleine opacité
+                const selectedIcon = option.querySelector('i');
+                if (selectedIcon) {
+                    selectedIcon.style.opacity = '1';
+                }
+            });
+        });
+    }
+}
+
+// Initialiser tous les dropdowns
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.custom-dropdown').forEach(initDropdown);
+    // Forcer l'affichage initial des icônes
+    setTimeout(forceIconsDisplay, 500);
+});
+
+// Fermer les dropdowns si clic à l'extérieur
+document.addEventListener('click', (event) => {
+    document.querySelectorAll('.custom-dropdown input').forEach(input => {
+        const dropdown = input.closest('.custom-dropdown');
+        if (!dropdown.contains(event.target)) {
+            input.checked = false;
+        }
+    });
+});
+
+
+
+// car details gellery 
+
+// Gallery functionality
+function initGallery() {
+  const galleryImages = [
+    {
+      main: "/assets/images/car-1.png",
+      thumb: "/assets/images/car-1.png"
+    },
+    {
+      main: "/assets/images/car-1.png",
+      thumb: "/assets/images/car-1.png"
+    },
+    {
+      main: "/assets/images/car-1.png",
+      thumb: "/assets/images/car-1.png"
+    },
+    {
+      main: "/assets/images/car-1.png",
+      thumb: "/assets/images/car-1.png"
+    },
+    {
+      main: "/assets/images/car-1.png",
+      thumb: "/assets/images/car-1.png"
+    }
+  ];
+  
+  let galleryCurrentIndex = 0;
+  const galleryTotalImages = galleryImages.length;
+  
+  const galleryMainImage = document.getElementById('galleryMainImage');
+  const galleryCurrentImageSpan = document.getElementById('galleryCurrentImage');
+  const galleryTotalImagesSpan = document.getElementById('galleryTotalImages');
+  const galleryPrevBtn = document.getElementById('galleryPrevBtn');
+  const galleryNextBtn = document.getElementById('galleryNextBtn');
+  const thumbSlides = document.querySelectorAll('.gallery-thumb-slide');
+  
+  // Initialiser le compteur
+  galleryTotalImagesSpan.textContent = galleryTotalImages;
+  updateGalleryCounter();
+  
+  // Initialiser Swiper pour les miniatures
+  const galleryThumbnailSwiper = new Swiper('.gallery-thumbnail-swiper', {
+    slidesPerView: 'auto',
+    spaceBetween: 15,
+    centeredSlides: true,
+    loop: false,
+    pagination: {
+      el: '.gallery-pagination',
+      clickable: true,
+    },
+    breakpoints: {
+      640: {
+        slidesPerView: 3,
+        spaceBetween: 10,
+      },
+      768: {
+        slidesPerView: 4,
+        spaceBetween: 15,
+      },
+      1024: {
+        slidesPerView: 5,
+        spaceBetween: 20,
+      },
+    },
+  });
+  
+  // Mettre à jour l'image principale et le swiper
+  function updateGalleryMainImage(index) {
+    galleryCurrentIndex = index;
+    
+    // Animation de fondu
+    galleryMainImage.style.opacity = '0';
+    
+    setTimeout(() => {
+      galleryMainImage.src = galleryImages[galleryCurrentIndex].main;
+      galleryMainImage.style.opacity = '1';
+      updateGalleryCounter();
+      updateGalleryButtons();
+      updateActiveThumb();
+      
+      // Mettre à jour le swiper
+      galleryThumbnailSwiper.slideTo(galleryCurrentIndex);
+    }, 200);
+  }
+  
+  // Mettre à jour le compteur
+  function updateGalleryCounter() {
+    galleryCurrentImageSpan.textContent = galleryCurrentIndex + 1;
+  }
+  
+  // Mettre à jour l'état des boutons
+  function updateGalleryButtons() {
+    galleryPrevBtn.classList.toggle('disabled', galleryCurrentIndex === 0);
+    galleryNextBtn.classList.toggle('disabled', galleryCurrentIndex === galleryTotalImages - 1);
+  }
+  
+  // Mettre à jour la miniature active
+  function updateActiveThumb() {
+    thumbSlides.forEach((slide, index) => {
+      if (index === galleryCurrentIndex) {
+        slide.classList.add('gallery-thumb-slide-active');
+      } else {
+        slide.classList.remove('gallery-thumb-slide-active');
+      }
+    });
+  }
+  
+  // Événements pour les boutons de navigation
+  galleryPrevBtn.addEventListener('click', function() {
+    if (galleryCurrentIndex > 0) {
+      updateGalleryMainImage(galleryCurrentIndex - 1);
+    }
+  });
+  
+  galleryNextBtn.addEventListener('click', function() {
+    if (galleryCurrentIndex < galleryTotalImages - 1) {
+      updateGalleryMainImage(galleryCurrentIndex + 1);
+    }
+  });
+  
+  // Mettre à jour l'image principale lorsqu'on clique sur une miniature
+  thumbSlides.forEach((slide, index) => {
+    slide.addEventListener('click', function() {
+      updateGalleryMainImage(index);
+    });
+  });
+  
+  // Mettre à jour l'image principale lorsqu'on change de slide dans le swiper
+  galleryThumbnailSwiper.on('slideChange', function() {
+    const activeIndex = galleryThumbnailSwiper.activeIndex;
+    updateGalleryMainImage(activeIndex);
+  });
+  
+  // Initialisation
+  updateGalleryButtons();
+  updateActiveThumb();
+}
+
+// Appeler la fonction d'initialisation de la galerie
+document.addEventListener('DOMContentLoaded', function() {
+  // ... votre code existant ...
+  
+  // Initialiser la galerie si on est sur la page car-details
+  if (document.querySelector('.gallery-page')) {
+    initGallery();
+  }
+});
+
+
+ // Gestion du modal de réservation
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookingModal = document.getElementById('bookingModal');
+        const bookingModalClose = document.getElementById('bookingModalClose');
+        const bookingForm = document.getElementById('bookingForm');
+        const bookingBtn = document.querySelector('.booking-btn');
+        
+        // Ouvrir le modal
+        if (bookingBtn) {
+            bookingBtn.addEventListener('click', function() {
+                bookingModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Empêcher le défilement
+            });
+        }
+        
+        // Fermer le modal
+        bookingModalClose.addEventListener('click', function() {
+            bookingModal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Rétablir le défilement
+        });
+        
+        // Fermer le modal en cliquant à l'extérieur
+        bookingModal.addEventListener('click', function(e) {
+            if (e.target === bookingModal) {
+                bookingModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Gestion de la soumission du formulaire
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validation simple
+            const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
+            const returnDate = new Date(document.getElementById('booking-return-date').value);
+            
+            if (returnDate <= pickupDate) {
+                alert('La date de restitution doit être postérieure à la date de prise en charge.');
+                return;
+            }
+            
+            // Simulation de réservation réussie
+            alert('Votre réservation a été soumise avec succès! Nous vous contacterons bientôt.');
+            
+            // Fermer le modal
+            bookingModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Réinitialiser le formulaire
+            bookingForm.reset();
+        });
+        
+        // Définir la date minimale comme aujourd'hui
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('booking-pickup-date').min = today;
+        document.getElementById('booking-return-date').min = today;
+    });
+
+
+    
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Éléments DOM
+    const carsContainer = document.getElementById('cars-container');
+    const categoryButtons = document.querySelectorAll('.filter-btn');
+    const brandFilterItems = document.querySelectorAll('#brand-filter li');
+    const categoryFilterItems = document.querySelectorAll('#category-filter li');
+    const resultCount = document.getElementById('result-count');
+    const mobileResultCount = document.getElementById('mobile-result-count');
+    const loadingModal = document.getElementById('loading-modal');
+    
+    // Filtres actuels
+    let currentFilters = {
+        category: 'all',
+        brand: 'all'
+    };
+    
+    // Fonction pour filtrer les voitures
+    function filterCars() {
+        const carCards = document.querySelectorAll('.car-card');
+        let visibleCount = 0;
+        
+        carCards.forEach(card => {
+            const cardCategory = card.getAttribute('data-category');
+            const cardBrand = card.getAttribute('data-brand');
+            const cardStatus = card.getAttribute('data-status');
+            
+            const categoryMatch = currentFilters.category === 'all' || cardCategory === currentFilters.category;
+            const brandMatch = currentFilters.brand === 'all' || cardBrand === currentFilters.brand;
+            
+            if (categoryMatch && brandMatch) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Mettre à jour le compteur
+        resultCount.textContent = visibleCount;
+        mobileResultCount.textContent = visibleCount + ' Résultats';
+    }
+    
+    // Gestion des boutons de catégorie
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Retirer la classe active de tous les boutons
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            
+            currentFilters.category = this.getAttribute('data-category');
+            filterCars();
+        });
+    });
+    
+    // Gestion du filtre des marques
+    brandFilterItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const brand = this.getAttribute('data-brand');
+            
+            // Retirer la sélection de tous les éléments
+            brandFilterItems.forEach(li => li.classList.remove('selected'));
+            // Ajouter la sélection à l'élément cliqué
+            this.classList.add('selected');
+            
+            currentFilters.brand = brand;
+            filterCars();
+            
+            // Fermer le dropdown
+            document.getElementById('dropdown-toggle-brand').checked = false;
+        });
+    });
+    
+    // Gestion du filtre des catégories (dropdown)
+    categoryFilterItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            
+            // Retirer la sélection de tous les éléments
+            categoryFilterItems.forEach(li => li.classList.remove('selected'));
+            // Ajouter la sélection à l'élément cliqué
+            this.classList.add('selected');
+            
+            currentFilters.category = category;
+            filterCars();
+            
+            // Fermer le dropdown
+            document.getElementById('dropdown-toggle-category').checked = false;
+        });
+    });
+    
+    // Gestion des boutons "Découvrir"
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-details-btn') && !e.target.closest('.view-details-btn').classList.contains('disabled')) {
+            const carId = e.target.closest('.view-details-btn').getAttribute('data-car-id');
+            window.location.href = 'index.php?page=Voitures-Detailles&car_id=' + carId;
+        }
+    });
+    
+    // Fonction pour charger les voitures via AJAX (optionnel)
+    function loadCarsAjax(filters = {}) {
+        loadingModal.style.display = 'flex';
+        
+        const formData = new FormData();
+        formData.append('action', 'get_filtered_cars');
+        if (filters.category && filters.category !== 'all') {
+            formData.append('category_id', filters.category);
+        }
+        if (filters.brand && filters.brand !== 'all') {
+            formData.append('brand_id', filters.brand);
+        }
+        
+        fetch('./controllers/CarController.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCarsDisplay(data.cars);
+            } else {
+                console.error('Erreur:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+        })
+        .finally(() => {
+            loadingModal.style.display = 'none';
+        });
+    }
+    
+    function updateCarsDisplay(cars) {
+        // Implémentez la mise à jour de l'affichage avec les nouvelles données
+        // Cette fonction serait utilisée si vous voulez recharger les données depuis le serveur
+    }
+});
