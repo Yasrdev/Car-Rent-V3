@@ -4,6 +4,7 @@ require_once '../config/db-config.php';
 require_once '../models/Car.php';
 require_once '../models/CarCategory.php';
 require_once '../models/CarBrand.php';
+require_once '../models/CarImage.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -28,6 +29,7 @@ if (!isset($_SESSION['user_id'])) {
 $carModel = new Car($pdo);
 $categoryModel = new CarCategory($pdo);
 $brandModel = new CarBrand($pdo);
+$carImageModel = new CarImage($pdo);
 
 try {
     // Gestion des différentes actions
@@ -42,9 +44,11 @@ try {
                 $brands = $brandModel->getAllBrands();
                 echo json_encode(['success' => true, 'brands' => $brands]);
                 break;
+                
             case 'get_filtered_cars':
                 getFilteredCars($carModel);
                 break;
+                
             case 'get_car':
                 if (!isset($_GET['car_id'])) {
                     echo json_encode(['success' => false, 'message' => 'ID voiture manquant']);
@@ -52,10 +56,22 @@ try {
                 }
                 $car = $carModel->getCarById((int)$_GET['car_id']);
                 if ($car) {
+                    // Récupérer les images supplémentaires
+                    $additionalImages = $carImageModel->getImagesByCarId($car['id']);
+                    $car['additional_images'] = $additionalImages;
                     echo json_encode(['success' => true, 'car' => $car]);
                 } else {
                     echo json_encode(['success' => false, 'message' => 'Voiture non trouvée']);
                 }
+                break;
+
+            case 'get_car_images':
+                if (!isset($_GET['car_id'])) {
+                    echo json_encode(['success' => false, 'message' => 'ID voiture manquant']);
+                    break;
+                }
+                $images = $carImageModel->getImagesByCarId((int)$_GET['car_id']);
+                echo json_encode(['success' => true, 'images' => $images]);
                 break;
                 
             default:
@@ -67,7 +83,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add_car':
-                addCar($carModel, $categoryModel);
+                addCar($carModel, $categoryModel, $brandModel, $carImageModel);
                 break;
                 
             case 'add_category':
@@ -87,11 +103,15 @@ try {
                 break;
 
             case 'update_car':
-                updateCar($carModel, $categoryModel);
+                updateCar($carModel, $categoryModel, $brandModel, $carImageModel);
                 break;
 
             case 'delete_car':
-                deleteCar($carModel);
+                deleteCar($carModel, $carImageModel);
+                break;
+
+            case 'delete_car_image':
+                deleteCarImage($carImageModel);
                 break;
                 
             default:
@@ -107,20 +127,38 @@ try {
     echo json_encode(['success' => false, 'message' => 'Erreur serveur: ' . $e->getMessage()]);
 }
 
-function addCar($carModel, $categoryModel) {
+function addCar($carModel, $categoryModel, $brandModel, $carImageModel) {
+    global $pdo;
     $errors = [];
     
     // Validation des champs requis
-    $requiredFields = ['brand_id', 'model', 'category_id', 'year', 'license_plate', 'daily_price', 'fuel_type', 'transmission', 'status'];
-    foreach ($requiredFields as $field) {
+    $requiredFields = [
+        'brand_id' => 'La marque est requise',
+        'model' => 'Le modèle est requis',
+        'category_id' => 'La catégorie est requise',
+        'year' => 'L\'année est requise',
+        'color' => 'La couleur est requise',
+        'license_plate' => 'La plaque d\'immatriculation est requise',
+        'daily_price' => 'Le prix journalier est requis',
+        'fuel_type' => 'Le type de carburant est requis',
+        'transmission' => 'La transmission est requise',
+        'status' => 'Le statut est requis'
+    ];
+    
+    foreach ($requiredFields as $field => $message) {
         if (empty($_POST[$field])) {
-            $errors[$field] = 'Ce champ est requis';
+            $errors[$field] = $message;
         }
     }
     
     // Validation de la catégorie
     if (!empty($_POST['category_id']) && !$categoryModel->getCategoryById($_POST['category_id'])) {
         $errors['category_id'] = 'Catégorie invalide';
+    }
+    
+    // Validation de la marque
+    if (!empty($_POST['brand_id']) && !$brandModel->getBrandById($_POST['brand_id'])) {
+        $errors['brand_id'] = 'Marque invalide';
     }
     
     // Validation plaque d'immatriculation unique
@@ -144,40 +182,89 @@ function addCar($carModel, $categoryModel) {
         $errors['status'] = 'Statut invalide';
     }
     
+    // Validation des images
+    if (!isset($_FILES['car_images']) || empty($_FILES['car_images']['name'][0])) {
+        $errors['car_images'] = 'Au moins une image est requise';
+    } elseif (count($_FILES['car_images']['name']) > 5) {
+        $errors['car_images'] = 'Maximum 5 images autorisées';
+    }
+    
     if (!empty($errors)) {
         echo json_encode(['success' => false, 'errors' => $errors]);
         return;
     }
     
-    // Gestion de l'upload d'image
-    $mainImageUrl = null;
-    if (isset($_FILES['main_image']) && $_FILES['main_image']['error'] === UPLOAD_ERR_OK) {
+    // Gestion de l'upload des images multiples
+    $uploadedImages = [];
+    if (isset($_FILES['car_images']) && is_array($_FILES['car_images']['name'])) {
         $uploadDir = '../public/images/cars/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
         
-        $fileExtension = pathinfo($_FILES['main_image']['name'], PATHINFO_EXTENSION);
-        $fileName = uniqid() . '.' . $fileExtension;
-        $filePath = $uploadDir . $fileName;
+        $imageErrors = [];
+        for ($i = 0; $i < count($_FILES['car_images']['name']); $i++) {
+            if ($_FILES['car_images']['error'][$i] === UPLOAD_ERR_OK) {
+                $file = [
+                    'name' => $_FILES['car_images']['name'][$i],
+                    'type' => $_FILES['car_images']['type'][$i],
+                    'tmp_name' => $_FILES['car_images']['tmp_name'][$i],
+                    'error' => $_FILES['car_images']['error'][$i],
+                    'size' => $_FILES['car_images']['size'][$i]
+                ];
+                
+                $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $fileName = uniqid() . '_' . $i . '.' . $fileExtension;
+                $filePath = $uploadDir . $fileName;
+                
+                // Vérifier le type de fichier
+                $allowedTypes = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                
+                if (!in_array($fileExtension, $allowedTypes) || !in_array($file['type'], $allowedMimeTypes)) {
+                    $imageErrors[] = 'Type de fichier non autorisé pour "' . $file['name'] . '"';
+                    continue;
+                }
+                
+                // Vérifier la taille (5MB max)
+                if ($file['size'] > 5 * 1024 * 1024) {
+                    $imageErrors[] = 'L\'image "' . $file['name'] . '" est trop volumineuse (max 5MB)';
+                    continue;
+                }
+                
+                if (move_uploaded_file($file['tmp_name'], $filePath)) {
+                    $uploadedImages[] = [
+                        'url' => 'images/cars/' . $fileName,
+                        'order' => $i
+                    ];
+                } else {
+                    $imageErrors[] = 'Erreur lors du téléchargement de "' . $file['name'] . '"';
+                }
+            } elseif ($_FILES['car_images']['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                $imageErrors[] = 'Erreur avec le fichier "' . $_FILES['car_images']['name'][$i] . '"';
+            }
+        }
         
-        // Vérifier le type de fichier
-        $allowedTypes = ['jpg', 'jpeg', 'png', 'webp'];
-        if (!in_array(strtolower($fileExtension), $allowedTypes)) {
-            echo json_encode(['success' => false, 'errors' => ['main_image' => 'Type de fichier non autorisé']]);
+        if (!empty($imageErrors)) {
+            // Supprimer les images déjà uploadées en cas d'erreur
+            foreach ($uploadedImages as $image) {
+                $fullPath = '../public/' . $image['url'];
+                if (file_exists($fullPath)) {
+                    @unlink($fullPath);
+                }
+            }
+            echo json_encode(['success' => false, 'errors' => ['car_images' => implode(', ', $imageErrors)]]);
             return;
         }
         
-        // Vérifier la taille (5MB max)
-        if ($_FILES['main_image']['size'] > 5 * 1024 * 1024) {
-            echo json_encode(['success' => false, 'errors' => ['main_image' => 'Fichier trop volumineux (max 5MB)']]);
+        if (empty($uploadedImages)) {
+            echo json_encode(['success' => false, 'errors' => ['car_images' => 'Aucune image valide n\'a été téléchargée']]);
             return;
-        }
-        
-        if (move_uploaded_file($_FILES['main_image']['tmp_name'], $filePath)) {
-            $mainImageUrl = 'images/cars/' . $fileName;
         }
     }
+    
+    // La première image devient l'image principale
+    $mainImageUrl = !empty($uploadedImages) ? $uploadedImages[0]['url'] : null;
     
     // Préparer les données
     $carData = [
@@ -185,40 +272,76 @@ function addCar($carModel, $categoryModel) {
         'category_id' => (int)$_POST['category_id'],
         'model' => trim($_POST['model']),
         'year' => (int)$_POST['year'],
-        'color' => !empty($_POST['color']) ? trim($_POST['color']) : null,
+        'color' => trim($_POST['color']),
         'license_plate' => trim($_POST['license_plate']),
         'daily_price' => (float)$_POST['daily_price'],
-        'status' => !empty($_POST['status']) ? trim($_POST['status']) : 'disponible',
+        'status' => trim($_POST['status']),
         'fuel_type' => $_POST['fuel_type'],
         'transmission' => $_POST['transmission'],
         'description' => !empty($_POST['description']) ? trim($_POST['description']) : null,
         'main_image_url' => $mainImageUrl
     ];
     
-    $result = $carModel->addCar($carData);
-    
-    if ($result) {
-        echo json_encode(['success' => true, 'message' => 'Voiture ajoutée avec succès']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout de la voiture']);
+    try {
+        // Commencer une transaction pour assurer l'intégrité des données
+        $pdo->beginTransaction();
+        
+        // Ajouter la voiture et récupérer l'ID
+        $carId = $carModel->addCar($carData);
+        
+        if ($carId && is_numeric($carId)) {
+            // Ajouter les images supplémentaires dans la table car_images (sauf la première qui est l'image principale)
+            for ($i = 1; $i < count($uploadedImages); $i++) {
+                $imageData = $uploadedImages[$i];
+                $success = $carImageModel->addCarImage($carId, $imageData['url'], $imageData['order']);
+                
+                if (!$success) {
+                    throw new Exception('Erreur lors de l\'ajout des images supplémentaires');
+                }
+            }
+            
+            $pdo->commit();
+            echo json_encode(['success' => true, 'message' => 'Voiture ajoutée avec succès', 'car_id' => $carId]);
+        } else {
+            $pdo->rollBack();
+            // Supprimer les images uploadées en cas d'erreur
+            foreach ($uploadedImages as $image) {
+                $fullPath = '../public/' . $image['url'];
+                if (file_exists($fullPath)) {
+                    @unlink($fullPath);
+                }
+            }
+            echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout de la voiture - ID non retourné']);
+        }
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        // Supprimer les images uploadées en cas d'erreur
+        foreach ($uploadedImages as $image) {
+            $fullPath = '../public/' . $image['url'];
+            if (file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
+        error_log('Erreur addCar: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout de la voiture: ' . $e->getMessage()]);
     }
 }
 
-                function getFilteredCars($carModel) {
-                    $filters = [];
-                    
-                    if (!empty($_POST['category_id'])) {
-                        $filters['category_id'] = (int)$_POST['category_id'];
-                    }
-                    
-                    if (!empty($_POST['brand_id'])) {
-                        $filters['brand_id'] = (int)$_POST['brand_id'];
-                    }
-                    
-                    $cars = $carModel->getFilteredCars($filters);
-                    
-                    echo json_encode(['success' => true, 'cars' => $cars]);
-                };
+function getFilteredCars($carModel) {
+    $filters = [];
+    
+    if (!empty($_GET['category_id'])) {
+        $filters['category_id'] = (int)$_GET['category_id'];
+    }
+    
+    if (!empty($_GET['brand_id'])) {
+        $filters['brand_id'] = (int)$_GET['brand_id'];
+    }
+    
+    $cars = $carModel->getFilteredCars($filters);
+    
+    echo json_encode(['success' => true, 'cars' => $cars]);
+}
 
 function addCategory($categoryModel) {
     if (empty($_POST['name'])) {
@@ -260,15 +383,13 @@ function deleteCategory($categoryModel) {
     }
     
     // Vérifier si des voitures utilisent cette catégorie
-    // (Vous devrez implémenter cette vérification dans votre modèle Car)
-    // Vérifier si des voitures utilisent cette catégorie (prévenir la contrainte FK)
     try {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM cars WHERE category_id = ?");
         $stmt->execute([$categoryId]);
         $count = (int)$stmt->fetchColumn();
 
         if ($count > 0) {
-            $msg = "Impossible de supprimer cette catégorie — elle est utilisée par $count voiture(s).\nSupprimez ou réaffectez d'abord ces voitures, puis réessayez.";
+            $msg = "Impossible de supprimer cette catégorie — elle est utilisée par $count voiture(s). Supprimez ou réaffectez d'abord ces voitures, puis réessayez.";
             echo json_encode(['success' => false, 'message' => $msg]);
             return;
         }
@@ -297,10 +418,8 @@ function deleteCategory($categoryModel) {
     }
 }
 
-/**
- * Update an existing car with validation
- */
-function updateCar($carModel, $categoryModel) {
+function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
+    global $pdo;
     $errors = [];
     
     // Get required fields (matching form input names from dashboard.php)
@@ -363,6 +482,16 @@ function updateCar($carModel, $categoryModel) {
         $errors['DailyPrice'] = 'Le prix doit être un nombre positif';
     }
     
+    // Validation de la catégorie si modifiée
+    if (!empty($categoryId) && $categoryId != $currentCar['category_id'] && !$categoryModel->getCategoryById($categoryId)) {
+        $errors['Category'] = 'Catégorie invalide';
+    }
+    
+    // Validation de la marque si modifiée
+    if (!empty($brandId) && $brandId != $currentCar['brand_id'] && !$brandModel->getBrandById($brandId)) {
+        $errors['Brand'] = 'Marque invalide';
+    }
+    
     if (!empty($errors)) {
         echo json_encode(['success' => false, 'message' => 'Erreurs de validation', 'errors' => $errors]);
         return;
@@ -370,7 +499,7 @@ function updateCar($carModel, $categoryModel) {
     
     $mainImageUrl = $currentCar['main_image_url'];
     
-    // Handle image upload
+    // Handle image upload for main image
     if (isset($_FILES['main_image']) && $_FILES['main_image']['size'] > 0) {
         $file = $_FILES['main_image'];
         
@@ -401,7 +530,7 @@ function updateCar($carModel, $categoryModel) {
         
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             // Delete old image if it exists and is different
-            if ($mainImageUrl) {
+            if ($mainImageUrl && $mainImageUrl != 'images/cars/' . $filename) {
                 $oldImagePath = __DIR__ . '/../public/' . $mainImageUrl;
                 if (file_exists($oldImagePath) && is_file($oldImagePath)) {
                     @unlink($oldImagePath);
@@ -412,6 +541,77 @@ function updateCar($carModel, $categoryModel) {
             $mainImageUrl = 'images/cars/' . $filename;
         } else {
             echo json_encode(['success' => false, 'message' => 'Erreur lors du téléchargement de l\'image']);
+            return;
+        }
+    }
+    
+    // Handle additional images upload
+    $newAdditionalImages = [];
+    if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images']['name'])) {
+        $uploadDir = '../public/images/cars/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        $imageErrors = [];
+        $currentImageCount = $carImageModel->countImagesByCarId($carId);
+        $availableSlots = 4 - $currentImageCount; // Maximum 4 images supplémentaires (5 total - 1 principale)
+        
+        for ($i = 0; $i < count($_FILES['additional_images']['name']); $i++) {
+            if ($_FILES['additional_images']['error'][$i] === UPLOAD_ERR_OK) {
+                if ($availableSlots <= 0) {
+                    $imageErrors[] = 'Maximum 5 images autorisées au total (1 principale + 4 supplémentaires)';
+                    break;
+                }
+                
+                $file = [
+                    'name' => $_FILES['additional_images']['name'][$i],
+                    'type' => $_FILES['additional_images']['type'][$i],
+                    'tmp_name' => $_FILES['additional_images']['tmp_name'][$i],
+                    'error' => $_FILES['additional_images']['error'][$i],
+                    'size' => $_FILES['additional_images']['size'][$i]
+                ];
+                
+                $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $fileName = uniqid() . '_add_' . $carId . '_' . $i . '.' . $fileExtension;
+                $filePath = $uploadDir . $fileName;
+                
+                // Vérifier le type de fichier
+                $allowedTypes = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                
+                if (!in_array($fileExtension, $allowedTypes) || !in_array($file['type'], $allowedMimeTypes)) {
+                    $imageErrors[] = 'Type de fichier non autorisé pour "' . $file['name'] . '"';
+                    continue;
+                }
+                
+                // Vérifier la taille (5MB max)
+                if ($file['size'] > 5 * 1024 * 1024) {
+                    $imageErrors[] = 'L\'image "' . $file['name'] . '" est trop volumineuse (max 5MB)';
+                    continue;
+                }
+                
+                if (move_uploaded_file($file['tmp_name'], $filePath)) {
+                    $newAdditionalImages[] = [
+                        'url' => 'images/cars/' . $fileName,
+                        'order' => $currentImageCount + $i
+                    ];
+                    $availableSlots--;
+                } else {
+                    $imageErrors[] = 'Erreur lors du téléchargement de "' . $file['name'] . '"';
+                }
+            }
+        }
+        
+        if (!empty($imageErrors)) {
+            // Supprimer les nouvelles images uploadées en cas d'erreur
+            foreach ($newAdditionalImages as $image) {
+                $fullPath = '../public/' . $image['url'];
+                if (file_exists($fullPath)) {
+                    @unlink($fullPath);
+                }
+            }
+            echo json_encode(['success' => false, 'errors' => ['additional_images' => implode(', ', $imageErrors)]]);
             return;
         }
     }
@@ -434,21 +634,38 @@ function updateCar($carModel, $categoryModel) {
     
     // Update car in database
     try {
-        if ($carModel->updateCar($carId, $data)) {
-            echo json_encode(['success' => true, 'message' => 'Voiture mise à jour avec succès']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour de la voiture']);
+        $pdo->beginTransaction();
+        
+        $updateSuccess = $carModel->updateCar($carId, $data);
+        
+        if ($updateSuccess && !empty($newAdditionalImages)) {
+            // Ajouter les nouvelles images supplémentaires
+            foreach ($newAdditionalImages as $image) {
+                $success = $carImageModel->addCarImage($carId, $image['url'], $image['order']);
+                if (!$success) {
+                    throw new Exception('Erreur lors de l\'ajout des images supplémentaires');
+                }
+            }
         }
+        
+        $pdo->commit();
+        echo json_encode(['success' => true, 'message' => 'Voiture mise à jour avec succès']);
     } catch (Exception $e) {
+        $pdo->rollBack();
+        // Supprimer les nouvelles images uploadées en cas d'erreur
+        foreach ($newAdditionalImages as $image) {
+            $fullPath = '../public/' . $image['url'];
+            if (file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
         error_log('Exception updateCar: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour de la voiture']);
     }
 }
 
-/**
- * Delete a car and its image
- */
-function deleteCar($carModel) {
+function deleteCar($carModel, $carImageModel) {
+    global $pdo;
     $carId = $_POST['car_id'] ?? null;
     
     if (empty($carId)) {
@@ -456,7 +673,7 @@ function deleteCar($carModel) {
         return;
     }
     
-    // Get car to retrieve image path
+    // Get car to retrieve image paths
     $car = $carModel->getCarById($carId);
     if (!$car) {
         echo json_encode(['success' => false, 'message' => 'Voiture non trouvée']);
@@ -464,21 +681,46 @@ function deleteCar($carModel) {
     }
     
     try {
-        // Delete image file if exists
+        // Récupérer toutes les images de la voiture (image principale + images supplémentaires)
+        $allImages = [];
+        
+        // Ajouter l'image principale
         if ($car['main_image_url']) {
-            $imagePath = __DIR__ . '/../public/' . $car['main_image_url'];
-            if (file_exists($imagePath) && is_file($imagePath)) {
-                @unlink($imagePath);
-            }
+            $allImages[] = $car['main_image_url'];
         }
         
-        // Delete car from database
-        if ($carModel->deleteCar($carId)) {
-            echo json_encode(['success' => true, 'message' => 'Voiture supprimée avec succès']);
+        // Récupérer les images supplémentaires
+        $additionalImages = $carImageModel->getImagesByCarId($carId);
+        foreach ($additionalImages as $image) {
+            $allImages[] = $image['image_url'];
+        }
+        
+        // Commencer une transaction
+        $pdo->beginTransaction();
+        
+        // Supprimer les images supplémentaires de la base de données
+        $carImageModel->deleteImagesByCarId($carId);
+        
+        // Supprimer la voiture de la base de données
+        $deleteSuccess = $carModel->deleteCar($carId);
+        
+        if ($deleteSuccess) {
+            // Supprimer les fichiers images du serveur
+            foreach ($allImages as $imagePath) {
+                $fullPath = __DIR__ . '/../public/' . $imagePath;
+                if (file_exists($fullPath) && is_file($fullPath)) {
+                    @unlink($fullPath);
+                }
+            }
+            
+            $pdo->commit();
+            echo json_encode(['success' => true, 'message' => 'Voiture et toutes ses images supprimées avec succès']);
         } else {
+            $pdo->rollBack();
             echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de la voiture']);
         }
     } catch (PDOException $e) {
+        $pdo->rollBack();
         // Handle foreign key constraints (reservations linked to this car)
         $errorInfo = $e->errorInfo ?? null;
         $sqlState = is_array($errorInfo) && isset($errorInfo[0]) ? $errorInfo[0] : $e->getCode();
@@ -491,8 +733,44 @@ function deleteCar($carModel) {
             echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de la voiture']);
         }
     } catch (Exception $e) {
+        $pdo->rollBack();
         error_log('Exception deleteCar: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de la voiture']);
+    }
+}
+
+function deleteCarImage($carImageModel) {
+    $imageId = $_POST['image_id'] ?? null;
+    
+    if (empty($imageId)) {
+        echo json_encode(['success' => false, 'message' => 'ID image manquant']);
+        return;
+    }
+    
+    // Récupérer l'image pour obtenir le chemin du fichier
+    $image = $carImageModel->getImageById($imageId);
+    if (!$image) {
+        echo json_encode(['success' => false, 'message' => 'Image non trouvée']);
+        return;
+    }
+    
+    try {
+        // Supprimer l'image de la base de données
+        $success = $carImageModel->deleteImage($imageId);
+        
+        if ($success) {
+            // Supprimer le fichier image du serveur
+            $fullPath = __DIR__ . '/../public/' . $image['image_url'];
+            if (file_exists($fullPath) && is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+            echo json_encode(['success' => true, 'message' => 'Image supprimée avec succès']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de l\'image']);
+        }
+    } catch (Exception $e) {
+        error_log('Exception deleteCarImage: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de l\'image']);
     }
 }
 
@@ -542,7 +820,7 @@ function deleteBrand($brandModel) {
         $count = (int)$stmt->fetchColumn();
 
         if ($count > 0) {
-            $msg = "Impossible de supprimer cette marque — elle est utilisée par $count voiture(s).\nSupprimez ou réaffectez d'abord ces voitures, puis réessayez.";
+            $msg = "Impossible de supprimer cette marque — elle est utilisée par $count voiture(s). Supprimez ou réaffectez d'abord ces voitures, puis réessayez.";
             echo json_encode(['success' => false, 'message' => $msg]);
             return;
         }
@@ -568,3 +846,4 @@ function deleteBrand($brandModel) {
         }
     }
 }
+?>

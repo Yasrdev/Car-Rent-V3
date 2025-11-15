@@ -36,130 +36,121 @@ body {
   background-color: #030303;
 }
 
-
-/* Style du loader */
 /* --- Loader --- */
-    #loader {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #111;
-      color: #fff;
-      z-index: 9999;
-    }
+#loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  z-index: 9999;
+}
 
-    #loader img,
-    #loader .line{
-      margin: 0; /* Supprime tout espace vertical */
-      padding: 0;
-    }
-    #loader h3 {
-      margin: 10px; /* Supprime tout espace vertical */
-      padding: 0;
-    }
+#loader img,
+#loader .line{
+  margin: 0;
+  padding: 0;
+}
 
-    /* Logo */
-    #loader img {
-      width: 120px;
-      height: auto;
-      opacity: 0;
-      transform: scale(0.8);
-      animation: fadeInZoom 1s ease forwards;
-    }
+#loader h3 {
+  margin: 10px;
+  padding: 0;
+}
 
-    /* Ligne animée depuis le centre */
-    .line {
-      position: relative;
-      width: 200px; /* taille finale */
-      height: 2px;
-      margin: 25px 0;
-      background: transparent;
-      overflow: hidden;
-    }
+/* Logo */
+#loader img {
+  width: 120px;
+  height: auto;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: fadeInZoom 1s ease forwards;
+}
 
+/* Ligne animée depuis le centre */
+.line {
+  position: relative;
+  width: 200px;
+  height: 2px;
+  margin: 25px 0;
+  background: transparent;
+  overflow: hidden;
+}
 
-    .line::before,
-    .line::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      height: 100%;
-      width: 50%;
-      border-radius: 4px;
-      background: #ffffff; 
-      box-shadow:
-        0 0 5px #ffffff,
-        0 0 10px #ffffff,
-        0 0 20px #ffffff,
-        0 0 40px #ffffff; 
-      transform: scaleX(0);
-      transform-origin: center;
-      animation: expandSide 1.5s ease forwards 1s;
-    }
+.line::before,
+.line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  border-radius: 4px;
+  background: #ffffff; 
+  box-shadow:
+    0 0 5px #ffffff,
+    0 0 10px #ffffff,
+    0 0 20px #ffffff,
+    0 0 40px #ffffff; 
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: expandSide 1.5s ease forwards 1s;
+}
 
-    .line::before {
-      left: 0;
-      transform-origin: right;
-    }
+.line::before {
+  left: 0;
+  transform-origin: right;
+}
 
-    .line::after {
-      right: 0;
-      transform-origin: left;
-    }
+.line::after {
+  right: 0;
+  transform-origin: left;
+}
 
-
-    /* --- Animations --- */
-    @keyframes fadeInZoom {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes expandSide {
-      to {
-        transform: scaleX(1);
-      }
-    }
-
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
-    @keyframes neonPulse {
-      0%, 100% {
-        box-shadow:
-          0 0 5px #ffffff,
-          0 0 10px #ffffff,
-          0 0 20px #ffffff,
-          0 0 40px #ffffff;
-    }
-      50% {
-        box-shadow:
-          0 0 2px #ffffff,
-          0 0 5px #ffffff,
-          0 0 10px #ffffff,
-          0 0 20px #ffffff;
-    }
+/* --- Animations --- */
+@keyframes fadeInZoom {
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
+}
+
+@keyframes expandSide {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 5px #ffffff,
+      0 0 10px #ffffff,
+      0 0 20px #ffffff,
+      0 0 40px #ffffff;
+  }
+  50% {
+    box-shadow:
+      0 0 2px #ffffff,
+      0 0 5px #ffffff,
+      0 0 10px #ffffff,
+      0 0 20px #ffffff;
+  }
+}
 
 .line::before,
 .line::after {
   animation:
     expandSide 1.5s ease forwards 1s,
-    neonPulse 1.5s infinite alternate ease-in-out 2.5s; /* effet pulsant après */
+    neonPulse 1.5s infinite alternate ease-in-out 2.5s;
 }
-
-
-
-
-
-
-
 
 /* Barre de navigation */
 .navbar {
@@ -177,27 +168,25 @@ body {
 
 /* effet du bordure en menu */
 .navbar.active {
-      border: 1px solid #666363; /* bordure rouge après scroll */
-      backdrop-filter: blur(10px);
-      box-sizing: border-box;   /* << important pour inclure padding et border dans le width */
-      margin: 0; 
-      align-items: center;
-      transition: 0.3s;
-      z-index: 100;
-    }
+  border: 1px solid #666363;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  margin: 0; 
+  align-items: center;
+  transition: 0.3s;
+  z-index: 100;
+}
 
 #logo.active{
   width: 70px;
   height:70px;
   transition: 0.3s;
 }
-    
+
 #logo{
   width: 90px;
   height:90px;
 }
-
-
 
 .menu {
   list-style: none;
@@ -206,7 +195,6 @@ body {
   margin: 0;
   padding: 0;
 }
-
 
 .menu a {
   text-decoration: none;
@@ -232,12 +220,9 @@ body {
   z-index: 101;
 }
 
-
-
 @media (max-width: 768px) {
   .burger{
     display: block;
-   
   }
   .menu{
     display: none;
@@ -247,21 +232,19 @@ body {
 /* Fullscreen menu */
 .fullscreen-menu {
   position: fixed;
-  top: 100%; /* Commence en bas de l'écran */
+  top: 100%;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0); /* Fond semi-transparent */
-  backdrop-filter: blur(7px); /* effet flou */
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(7px);
   display: flex;
-  flex-direction: column; /* Arrange les enfants verticalement */
-  justify-content: center; /* Centre verticalement */
-  align-items: center;     /* Centre horizontalement */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   transition: top 0.5s ease;
   z-index: 5;
 }
-
-
 
 .fullscreen-menu ul {
   list-style: none;
@@ -287,8 +270,8 @@ body {
 
 .fullscreen-menu .info-nav{
   display: flex;
-  justify-content: center; /* centre les éléments horizontalement */
-  gap: 20px;               /* espace entre les éléments */
+  justify-content: center;
+  gap: 20px;
   position: absolute;
   bottom: 30px;
   left: 0;
@@ -311,28 +294,20 @@ body {
   top: 0;
 }
 
-
-
-
 /* Section Accueil Cars page*/
 .hero-cars {
-  position: relative; /*Permet de positionner des éléments à l'intérieur (absolute par exemple) par rapport à .hero. */
-  height: 50vh; /*La hauteur de la section = 100% de la hauteur de la fenêtre (viewport).*/
-  display: flex; /*Active le Flexbox pour aligner facilement les enfants.*/
-  /*justify-content: center; /*Centre les éléments horizontalement dans la section.*/
-  align-items: center; /*Centre les éléments verticalement dans la section.*/
+  position: relative;
+  height: 50vh;
+  display: flex;
+  align-items: center;
   color: white;
   text-align: left;
   overflow: hidden;
-  /* flex-direction: column; */
 }
 
-
-
-
 .hero-cars-content {
-  z-index: 2; /*Assure que ce contenu reste au-dessus de la vidéo (z-index: -1).*/
-  max-width: 800px; /*Limite la largeur du contenu à 800px, pour que le texte ne soit pas trop étiré sur grand écran.*/
+  z-index: 2;
+  max-width: 800px;
 }
 
 .hero-cars-text{
@@ -342,7 +317,6 @@ body {
 
 .hero-cars-text h1{
   font-size: 45px;
-
 }
 
 .hero-cars-text p{
@@ -351,86 +325,187 @@ body {
   line-height: 1.6;
 }
 
-
-
 .smoke-effect {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 450px; /* Ajustez la hauteur de l'effet fumée */
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.8) 0%,
-        rgba(0, 0, 0, 0.5) 30%,
-        rgba(0, 0, 0, 0.3) 60%,
-        rgba(0, 0, 0, 0) 100%
-    );
-    pointer-events: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 450px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.5) 30%,
+    rgba(0, 0, 0, 0.3) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
 }
 
 /* Version avec effet plus réaliste de fumée */
 .smoke-effect-realistic {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 250px;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 1) 25%,
-        rgba(0, 0, 0, 0.95) 40%,
-        rgba(0, 0, 0, 0.85) 60%,
-        rgba(0, 0, 0, 0.7) 80%,
-        rgba(0, 0, 0, 0) 100%
-    );
-    pointer-events: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 25%,
+    rgba(0, 0, 0, 0.95) 40%,
+    rgba(0, 0, 0, 0.85) 60%,
+    rgba(0, 0, 0, 0.7) 80%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
 }
-
-
 
 #CarBackground {
-  position: absolute; /*Positionne la vidéo par rapport à son parent .hero*/
-  top: 0; /*Place la vidéo en haut à gauche de la section.*/
-  left: 0; /*Place la vidéo en haut à gauche de la section.*/
-  width: 100%; /*La vidéo remplit toute la section.*/
-  height: 100%;/*La vidéo remplit toute la section.*/
-  object-fit: cover; /*La vidéo est recadrée pour couvrir entièrement la section sans déformation, même si les proportions changent.*/
-  z-index: -1; /*La vidéo est derrière tout le contenu, car le contenu a un z-index plus élevé.*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
 }
-
-
 
 /* Overlay noir semi-transparent avec flou */
 .image-container::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5); /* noir semi-transparent */
-  backdrop-filter: blur(5px); /* flou */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
 }
 
-/* filter menu design cars page*/
-/*DropDown filter*/
+/* CORRECTION DU CENTRAGE DES CARTES */
+.car-card-container {
 
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    padding: 20px 50px 20px 50px;
+}
+
+.car-card {
+  position: relative;
+  background-color: transparent;
+  overflow: hidden;
+  width: 100%;
+  max-width: 320px;
+  height: 350px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+}
+
+.car-card:hover {
+  transform: translateY(-8px);
+}
+
+/* CORRECTION DEFINITIVE DU CAR-STATUS */
+.car-card .car-status {
+  position: absolute;
+  display: block;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border: 1px solid rgb(139, 137, 137);
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.car-card img {
+  width: 100%;
+  height: 220px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* CORRECTION DE LA STRUCTURE DE LA CARTE */
+.car-info {
+  padding: 15px 0 0 0;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  width: 100%;
+  min-height: 80px;
+}
+
+.car-info-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.car-info-text h3 {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-info-text p {
+  margin-bottom: 6px;
+  color: #ccc;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-price {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin-top: 8px;
+}
+
+/* Container du bouton pour un meilleur contrôle */
+.car-button-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RÉINITIALISATION COMPLÈTE DU BOUTON */
+.view-details-btn {
+margin-top: 13%;
+}
+
+/* État hover */
+.view-details-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+
+/* filter menu design cars page*/
 .drop-filter{
   display: flex;
   justify-content: center;
 }
 
 .custom-dropdown-card{
-
-display: flex;
-justify-content: center;
-align-items: center;
-flex-wrap: wrap;
-gap: 15px;
-padding: 20px;
-border: 1px solid rgb(139, 137, 137);
-border-radius: 5px;
-max-width: min(95%, 1500px);
-
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid rgb(139, 137, 137);
+  border-radius: 5px;
+  max-width: min(95%, 1500px);
 }
 
 .custom-dropdown-mobile{
@@ -471,8 +546,6 @@ max-width: min(95%, 1500px);
   display: none;
 }
 
-
-
 /* Liste déroulante */
 .custom-dropdown ul {
   display: none;
@@ -493,9 +566,8 @@ max-width: min(95%, 1500px);
 /* Ouvrir la liste quand input est coché */
 .custom-dropdown input:checked + label + ul {
   display: block;
-  max-height: auto; /* assez grand pour afficher toutes les options */
+  max-height: auto;
   overflow: visible;
-
 }
 
 /* Style des options */
@@ -506,9 +578,8 @@ max-width: min(95%, 1500px);
   justify-content: space-between;
 }
 
-
 .custom-dropdown ul li i{
-display: none;
+  display: none;
 }
 
 .custom-dropdown ul li:hover {
@@ -529,9 +600,9 @@ display: none;
 .filter-results button{
   font-family: Mileast, sans-serif;
   justify-content: center;
-  display: flex;           /* utiliser flex pour que gap fonctionne */
-  gap: 15px;    
-  font-size: 16px;           /* espace entre les éléments enfants */
+  display: flex;
+  gap: 15px;
+  font-size: 16px;
   background: #000000;
   color: white;
   padding: 10px;
@@ -544,9 +615,6 @@ display: none;
   right: 30px;
   font-size: 15px;
 }
-
-
-
 
 /* filter radio*/
 .filter-menu {
@@ -564,6 +632,7 @@ display: none;
   letter-spacing: 2px;
   padding-left: 20px;
 }
+
 .filter-options {
   display: flex;
   gap: 15px;
@@ -587,92 +656,33 @@ display: none;
   color: #000000;
 }
 
-.car-card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  justify-items: center;
-  padding: 20px 40px;
-  background-color: #000000;
-}
-
-.car-card {
-    position: relative; /* ESSENTIEL pour positionner le car-status */
-    display: relative;
-    background-color: transparent;
-    overflow: hidden;
-    width: 310px;
-    height: 310px;
-    transition: transform 0.3s;
-}
-
-/* CORRECTION DEFINITIVE DU CAR-STATUS */
-.car-card .car-status {
-  position: absolute;
-  display: block;
-  top: 10px;
-  right: 10px;
-  color: rgb(0, 0, 0);
-  padding: 5px 10px;
-  border: 1px solid rgb(139, 137, 137);
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: bold;
-  z-index: 1;
-  
-}
-
-
-
-.car-card img {
-  width: 100%;
-  height: 80%;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.car-card .car-info {
-  padding: 15px 0px 0px 0px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-}
-
-.car-card:hover {
-  transform: translateY(-5px);
-}
-
 /* Section Accueil */
 .hero {
-  position: relative; /*Permet de positionner des éléments à l'intérieur (absolute par exemple) par rapport à .hero. */
-  height: 100vh; /*La hauteur de la section = 100% de la hauteur de la fenêtre (viewport).*/
-  display: flex; /*Active le Flexbox pour aligner facilement les enfants.*/
-  /*justify-content: center; /*Centre les éléments horizontalement dans la section.*/
-  align-items: center; /*Centre les éléments verticalement dans la section.*/
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
   color: white;
   text-align: left;
   overflow: hidden;
-  /* flex-direction: column; */
-  
 }
 
 /* Vidéo en arrière-plan */
 #bg-video {
-  position: absolute; /*Positionne la vidéo par rapport à son parent .hero*/
-  top: 0; /*Place la vidéo en haut à gauche de la section.*/
-  left: 0; /*Place la vidéo en haut à gauche de la section.*/
-  width: 100%; /*La vidéo remplit toute la section.*/
-  height: 100%;/*La vidéo remplit toute la section.*/
-  object-fit: cover; /*La vidéo est recadrée pour couvrir entièrement la section sans déformation, même si les proportions changent.*/
-  z-index: -1; /*La vidéo est derrière tout le contenu, car le contenu a un z-index plus élevé.*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
 }
 
 /* Contenu au-dessus de la vidéo */
 .hero-content {
-  z-index: 2; /*Assure que ce contenu reste au-dessus de la vidéo (z-index: -1).*/
-  max-width: 800px; /*Limite la largeur du contenu à 800px, pour que le texte ne soit pas trop étiré sur grand écran.*/
+  z-index: 2;
+  max-width: 800px;
 }
-
 
 .hero-logo{
   display: inline-block;
@@ -680,11 +690,10 @@ display: none;
   border-radius: 2px;
   padding: 5px;
   font-size: 15px;
-  margin-bottom: 0; /* supprime l'espace en dessous */
+  margin-bottom: 0;
   font-family: Historic, sans-serif;
   font-style: bold;
 }
-
 
 .hero-text{
   padding: 20px 20px 0px 20px;
@@ -694,23 +703,19 @@ display: none;
   font-size: 55px;
 }
 
-
-
-
 /* Boutons */
 .btn-group {
   margin-top: 20px; 
   padding: 10px;
-
 }
 
 .btn {
-  text-decoration: none; /*Supprime le soulignement par défaut des liens <a>.*/
-  padding: 12px 25px; /*Ajoute de l'espace à l'intérieur des boutons (haut/bas 12px, gauche/droite 25px).*/
-  border-radius: 5px;/*Rend les coins arrondis du bouton.*/
-  margin: 0 10px;/*Ajoute 10px d'espace horizontal entre les boutons.*/
-  font-weight: bold;/*Texte en gras.*/
-  transition: 0.3s; /*Animation fluide de 0,3 seconde quand le style change (ex : couleur au survol).*/
+  text-decoration: none;
+  padding: 12px 25px;
+  border-radius: 5px;
+  margin: 0 10px;
+  font-weight: bold;
+  transition: 0.3s;
 }
 
 .btn i{
@@ -721,13 +726,13 @@ display: none;
 /* Définition de l'animation */
 @keyframes bounce {
   0% {
-    transform: translateX(0);  /* point de départ */
+    transform: translateX(0);
   }
   50% {
-    transform: translateX(5px); /* va à droite */
+    transform: translateX(5px);
   }
   100% {
-    transform: translateX(0);  /* revient au point de départ */
+    transform: translateX(0);
   }
 }
 
@@ -753,12 +758,11 @@ display: none;
   border: 2px solid white;
 }
 
-
 .defiler {
-  position: absolute; /* position absolue par rapport à .hero */
-  bottom: 0;          /* colle en bas de la section */
+  position: absolute;
+  bottom: 0;
   left: 0;
-  width: 100%;        /* prend toute la largeur de la section */
+  width: 100%;
   text-align: center;
   padding: 20px;
 }
@@ -767,16 +771,15 @@ display: none;
   animation: bounceimg 1s infinite alternate;
 }
 
-
 @keyframes bounceimg {
   0% {
-    transform: translateY(0);  /* position initiale */
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(8px); /* descend de 8px */
+    transform: translateY(8px);
   }
   100% {
-    transform: translateY(0);  /* revient en haut */
+    transform: translateY(0);
   }
 }
 
@@ -786,9 +789,6 @@ display: none;
   background-color: #0a0a0a;
   color: #fff;
 }
-
-
-
 
 .swiper-header{
   text-align: center;
@@ -832,7 +832,6 @@ display: none;
 
 .swiper {
   width: 100%;
-  height: 500px;
   margin-bottom: 40px;
 }
 
@@ -845,10 +844,9 @@ display: none;
   transition: transform 0.3s;
 }
 
-
-
 .slide-image {
-  height: 60%;
+  height: 30vh;
+  
   background-color: #2a2a2a;
   display: flex;
   align-items: center;
@@ -864,7 +862,6 @@ display: none;
 
 .slide-content {
   padding: 25px 20px 20px 10px;
-  height: 40%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -880,7 +877,6 @@ display: none;
   color: #aaa;
   font-size: 15px;
   line-height: 1.5;
-  margin-bottom: 20px;
 }
 
 .slide-footer {
@@ -905,6 +901,18 @@ display: none;
   font-size: 14px;
 }
 
+
+.slide-button-home {
+  background-color: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 8px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
 .slide-button a{
    color: #fff;
 }
@@ -914,10 +922,9 @@ display: none;
   color: #ffffff;
 }
 
-.swiper-pagination {
-  /* position: relative; */
-  margin-bottom: 50px;
-}
+/* .swiper-pagination {
+  margin-top: 50px;
+} */
 
 .swiper-pagination-bullet {
   background-color: #444;
@@ -945,86 +952,80 @@ display: none;
   font-size: 20px;
 }
 
-
-
 /* Section Contact */
+.Contact {
+  background-image: url('../images/car.png');
+  backdrop-filter: blur(4px);
+  background-size: cover;
+  background-position: center;
+  padding: 60px 20px;
+  color: white;
+}
 
- /* Section avec image de fond */
-  .Contact {
-    background-image: url('../images/car.png') ;
-    backdrop-filter: blur(4px);
-    background-size: cover;
-    background-position: center;
-    padding: 60px 20px;
-    color: white;
-  }
+/* Container des cards */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
 
+.cards-container a{
+  text-decoration: none;
+  color: white;
+}
 
-  /* Container des cards */
-  .cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    margin-bottom: 40px;
-  }
+/* Chaque card */
+.card {
+  background: rgba(0, 0, 0, 0.253);
+  border: 2px solid gray;
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
 
-   .cards-container a{
-    text-decoration: none;
-    color: white;
-  }
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
 
-  /* Chaque card */
-  .card {
-    background: rgba(0, 0, 0, 0.253); /* transparent léger */
-    border: 2px solid gray;
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    width: 220px;
-    text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
-  }
+.card i {
+  font-size: 40px;
+  margin-bottom: 15px;
+  display: block;
+}
 
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  }
+.card h3 {
+  margin: 10px 0;
+  font-size: 20px;
+}
 
-  .card i {
-    font-size: 40px;
-    margin-bottom: 15px;
-    display: block;
-  }
+.card p {
+  font-size: 16px;
+}
 
-  .card h3 {
-    margin: 10px 0;
-    font-size: 20px;
-  }
+/* Map */
+.map-container {
+  width: 100%;
+  max-width: 800px;
+  height: 400px;
+  margin: 0 auto;
+  border: 2px solid gray;
+  border-radius: 15px;
+  overflow: hidden;
+}
 
-  .card p {
-    font-size: 16px;
-  }
+.map-container iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
 
-  /* Map */
-  .map-container {
-    width: 100%;
-    max-width: 800px;
-    height: 400px;
-    margin: 0 auto;
-    border: 2px solid gray;
-    border-radius: 15px;
-    overflow: hidden;
-  }
-
-  .map-container iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-
-  /* Section Accueil About page*/
+/* Section Accueil About page*/
 .hero-about {
   position: relative;
   padding: 10% 5% 5%;
@@ -1040,7 +1041,7 @@ display: none;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* Creates parallax effect */
+  background-attachment: fixed;
 }
 
 .hero-about-content {
@@ -1073,22 +1074,17 @@ display: none;
   font-weight: 300;
   letter-spacing: 2px;
   margin: 0;
-  /* color: #ffffff; */
-  
-  /* Animation arc-en-ciel */
   animation: rainbowNeon 6s linear infinite;
 }
 
 @keyframes rainbowNeon {
   0% {
     text-shadow: 
-      /* 0 0 5px #fff, */
       0 0 0px #fff,
       0 0 5px #fff,
       0 0 10px #ffffff,
       0 0 15px #ffffff;
   }
-
 }
 
 .container-about {
@@ -1117,505 +1113,102 @@ display: none;
   margin: 0 auto;
 }
 
-
-
-
-  /* footer style  */
-   footer {
-    background-color: rgba(0, 0, 0, 0.9);
-    padding: 60px 20px 30px;
-    color: white;
-  }
-
-  /* Conteneur principal */
-  .footer-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: flex-start;
-    gap: 40px;
-    text-align: center;
-  }
-
-  /* Bloc logo */
-  .footer-logo {
-    flex: 1;
-    min-width: 220px;
-  }
-
-  .footer-logo img {
-    width: 120px;
-    height: auto;
-    margin-bottom: 10px;
-  }
-
-  .footer-logo p {
-    color: #ccc;
-    font-size: 14px;
-  }
-
-  /* Bloc menu */
-  .footer-menu {
-    flex: 1;
-    min-width: 220px;
-  }
-
-  .footer-menu h3 {
-    margin-bottom: 15px;
-    font-size: 18px;
-  }
-
-  .footer-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .footer-menu li {
-    margin-bottom: 10px;
-  }
-
-  .footer-menu a {
-    text-decoration: none;
-    color: #ccc;
-    transition: color 0.3s;
-  }
-
-  .footer-menu a:hover {
-    color: #818181;
-  }
-
-  /* Bloc contact */
-  .footer-contact {
-    flex: 1;
-    min-width: 220px;
-  }
-
-  .footer-contact h3 {
-    margin-bottom: 15px;
-    font-size: 18px;
-  }
-
-  .footer-contact p {
-    margin: 5px 0;
-    color: #ccc;
-  }
-
-  /* Ligne "Made with love" */
-  .footer-bottom {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 14px;
-    color: #aaa;
-    border-top: 1px solid #333;
-    padding-top: 15px;
-  }
-
-  .footer-bottom span {
-    color: #ff4d4d;
-  }
-
-
-  /* ===== MEDIA QUERIES POUR MOBILE ===== */
- 
-@media (max-width: 768px) {
-
-.swiper-button-prev, .swiper-button-next {
-  display: none;
+/* Footer */
+footer {
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 60px 20px 30px;
+  color: white;
 }
 
-.hero-about {
-    padding: 28% 5% 10%;
-    min-height: auto;
-    background-attachment: scroll; /* Remove parallax on mobile for performance */
-  }
-  
-  .Section-header-about {
-    margin-bottom: 30px;
-  }
-  
-  .container-about {
-    gap: 25px;
-  }
-  
-  #poster-about {
-    max-width: 90%;
-  }
-
-
-
-
-.slide-image {
-  height: 50%;
-}
-
-
-  .swiper-header h2 {
-  margin-bottom: 10px;
-}
-  .swiper {
-      height: 450px;
-  }
-
-  .swiper-slide{
-    height: auto;
-  }
-  
-  
-  .categories {
-      gap: 20px;
-  }
-  
-  .category {
-      font-size: 16px;
-  }
-  
-.hero{
-  flex-direction: column;
-  text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh; 
-  }
-
-.hero-logo {
-  margin-bottom: 10px;
-}
-
-
-  .hero-text h1 {
-    font-size: 40px;
-  }
-  
-  .btn-group {
-    padding: 0;
-    margin: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .btn {
-    text-align: center;
-    margin: 0;
-  }
-
-.btn-primary:hover {
-  background-color: #030303;
-  border: 2px solid white;
-}
-
-.btn-secondary:hover {
-  background-color: rgb(128, 128, 128);
-  border: 2px solid white;
-}
-
-  .card{
-    width: 300px;
-  }
-
-.hero-cars-content{
-padding: 20px;
-}
-
-.hero-cars {
- 
-  height: 45vh; 
-}
-
-.hero-cars-text p{
-  text-align: center;
-}
-.hero-cars-text h1{
-  font-size: 30px;
+/* Conteneur principal */
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 40px;
   text-align: center;
 }
 
-.hero-cars-text p{
-  padding-top: 10px;
-} 
-
-
-/*####################################################*/
-/* CORRECTION DES DROPDOWNS MOBILE */
-.drop-filter {
-    max-width: 100%;
-    margin: 0 auto;
-    position: relative;
-    padding: 10px 20px
+/* Bloc logo */
+.footer-logo {
+  flex: 1;
+  min-width: 220px;
 }
 
-.custom-dropdown-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background-color: #000000;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    margin-bottom: 8px;
-    border: 1px solid rgb(139, 137, 137);
-    width: 100%;
-}
-
-.custom-dropdown-mobile span {
-    font-weight: normal;
-    margin-left: 4px;
-    color: #ccc;
-}
-
-.custom-dropdown-mobile i {
-    color: #ccc;
-}
-
-.custom-dropdown-card {
-    display: none;
-    position: absolute;
-    background-color: #000000;
-    border-radius: 8px;
-    padding: 16px;
-    border: 1px solid rgb(139, 137, 137);
-    width: 90%;
-    top: 60px;
-    left: auto;
-    z-index: 1000;
-}
-
-
-
-.custom-dropdown {
-    position: relative;
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-.custom-dropdown input[type="checkbox"] {
-    display: none;
-}
-
-.custom-dropdown label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background-color: #000000;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    border: 1px solid rgb(139, 137, 137);
-    min-height: 44px;
-    width: 100%;
-}
-
-.custom-dropdown label::after {
-    content: "\f078";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    color: #ccc;
-    transition: transform 0.3s ease;
-}
-
-.custom-dropdown input[type="checkbox"]:checked + label::after {
-    transform: rotate(180deg);
-}
-
-.custom-dropdown ul {
-    display: none;
-    list-style: none;
-    margin-top: 8px;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid rgb(139, 137, 137);
-    background-color: #000000;
-}
-
-.custom-dropdown input[type="checkbox"]:checked ~ ul {
-    display: block;
-}
-
-.custom-dropdown ul li {
-    padding: 12px 16px;
-    background-color: #000000;
-    color: white;
-    border-bottom: 1px solid rgb(139, 137, 137);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.custom-dropdown ul li:last-child {
-    border-bottom: none;
-}
-
-.custom-dropdown ul li:hover {
-    background-color: #1a1a1a;
-}
-
-.drop-car {
-    color: white;
-    font-size: 14px;
-    display: inline-block !important;
-}
-
-.filter-results button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 12px;
-    background-color: #000000;
-    color: white;
-    border: 1px solid rgb(139, 137, 137);
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-family: Mileast, sans-serif;
-    gap: 15px;
-}
-
-.filter-results button i {
-    margin-left: 8px;
-}
-
-.filter-results button span {
-    margin-left: 4px;
-    font-weight: normal;
-} 
-
-/* Animation pour l'affichage de la card */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.show-card {
-    display: block !important;
-    animation: fadeIn 0.3s ease-out;
-}
-/*####################################################*/
-.filter-menu{
-  flex-direction: column;
-  gap: 15px;
-}
-
-.filter-btn:hover{
-  background-color: #ffffff;
-  color: #000000;
-}
-  .hero-cars-text p{
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-
-.car-card-container {
-  justify-content: center;
-}
-
-.car-card{
-  width: 100%;
-}
-
-.car-card:hover {
-  transform: translateY(-5px);
-}
-
-  .filter-options{
-    align-items: center;
-    padding-right: 0px;
-  }
-
-  .footer-menu ul {
-display: flex;
-gap: 20px;
-justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .swiper-slide{
-    height: 80%;
-  }
-  .swiper-header h2 {
+.footer-logo img {
+  width: 120px;
+  height: auto;
   margin-bottom: 10px;
 }
-  .car-swiper{
-    height: 75vh; 
-  }
-  .navbar {
-    padding: 8px 3%;
-  }
-  
-  .hero{
-    height: 100vh; 
-  }
-  .hero-cars {
-    height: 85vh;
-  }
-  
-  .hero-cars {
-    height: 40vh;
-  }
-  
-  .hero-text h1 {
-    font-size: clamp(1.5rem, 8vw, 2rem);
-  }
-  
-  .btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-  
-   .hero-about {
-    padding: 30% 5% 15%;
-  }
-  
-  .Section-header-about h4 {
-    font-size: 12px;
-  }
-  
-  .container-about p {
-    text-align: justify-center;
-    hyphens: auto;
-  }
-  
-  #poster-about {
-    max-width: 95%;
-  }
 
-  
-  .slide-content {
-    /* padding: 12px; */
-    height: auto;
-  }
-  
-  .footer-container {
-    grid-template-columns: 1fr;
-    gap: 25px;
-  }
-  
-  .map-container {
-    height: 250px;
-  }
-  
-  .cards-container {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-options{
-    align-items: center;
-    padding-right: 0px;
-  }
+.footer-logo p {
+  color: #ccc;
+  font-size: 14px;
 }
 
+/* Bloc menu */
+.footer-menu {
+  flex: 1;
+  min-width: 220px;
+}
 
-/* Section Hero */
+.footer-menu h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.footer-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-menu li {
+  margin-bottom: 10px;
+}
+
+.footer-menu a {
+  text-decoration: none;
+  color: #ccc;
+  transition: color 0.3s;
+}
+
+.footer-menu a:hover {
+  color: #818181;
+}
+
+/* Bloc contact */
+.footer-contact {
+  flex: 1;
+  min-width: 220px;
+}
+
+.footer-contact h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.footer-contact p {
+  margin: 5px 0;
+  color: #ccc;
+}
+
+/* Ligne "Made with love" */
+.footer-bottom {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 14px;
+  color: #aaa;
+  border-top: 1px solid #333;
+  padding-top: 15px;
+}
+
+.footer-bottom span {
+  color: #ff4d4d;
+}
+
+/* Section Hero Details */
 .hero-cars-details {
   position: relative;
   display: flex;
@@ -1637,20 +1230,20 @@ justify-content: center;
 }
 
 .hero-cars-details-text p {
+  margin-bottom: 10px;
   font-size: 15px;
-  padding-top: 10px;
-  line-height: 1.6;
+  display: inline-block;
+  padding: 5px;
+  border: 1px solid rgb(139, 137, 137);
+  background-color: rgba(139, 137, 137, 0.281);
+  border-radius: 5px;
+  font-family: Mileast, sans-serif;
+  font-style: bold;
 }
 
-/* Background */
-#CarBackground {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
+.hero-cars-details-text h3{
+  margin-top: 10px;
+  color:rgb(141, 137, 137);
 }
 
 /* Smoke effects */
@@ -1694,7 +1287,7 @@ justify-content: center;
 }
 
 .gallery-container-main {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   width: 100%;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 15px;
@@ -1829,10 +1422,10 @@ justify-content: center;
 
 /* Spécifications */
 .Spécifications {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 40px auto 0;
   padding: 20px 0 0 0;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .Spécifications h3 {
@@ -1846,7 +1439,6 @@ justify-content: center;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -1884,15 +1476,14 @@ justify-content: center;
   color: #ffffff93;
   line-height: 1.6;
   font-size: 16px;
-  padding-left: 0;
 }
 
 /* Contact sidebar */
 .contact-pricing-sidebar {
-  flex: 0 0 350px;
+  /* flex: 0 0 350px; */
   position: sticky;
   top: 120px;
-  align-self: flex-start;
+  /* align-self: flex-start; */
   height: fit-content;
   margin-top: 60px;
   min-width: 0;
@@ -1971,491 +1562,586 @@ justify-content: center;
   background-color: #aaaaaa4f;
 }
 
-
-
-
-  /* Modal de réservation - STYLES RESPONSIVES */
-    .booking-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        padding: 20px;
-        overflow-y: auto;
-    }
-
-    .booking-modal.active {
-        display: flex;
-    }
-
-    .booking-modal-content {
-        background: rgba(0, 0, 0, 0.95);
-        border: 1px solid rgb(139, 137, 137);
-        border-radius: 15px;
-        width: 100%;
-        max-width: 700px;
-        padding: 30px;
-        color: white;
-        position: relative;
-        box-shadow: 0 15px 30px rgba(255, 255, 255, 0.1);
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    .booking-modal-close {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-        transition: color 0.3s;
-        z-index: 10;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-
-    .booking-modal-close:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .booking-modal-title {
-        text-align: center;
-        margin-bottom: 25px;
-        font-size: 1.8rem;
-        letter-spacing: 1px;
-        padding-right: 40px;
-    }
-
-    .booking-form-group {
-        margin-bottom: 20px;
-    }
-
-    .booking-form-label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #ffffff;
-    }
-
-    .booking-form-input, .booking-form-select, .booking-form-textarea {
-        width: 100%;
-        padding: 14px 16px;
-        background: rgba(0, 0, 0, 0.7);
-        border: 1px solid rgb(139, 137, 137);
-        border-radius: 8px;
-        font-size: 16px;
-        color: white;
-        transition: border-color 0.3s;
-        font-family: 'Mileast', sans-serif;
-    }
-
-    /* Styles spécifiques pour les inputs date et time */
-    .date-input-container, .time-input-container {
-        position: relative;
-        width: 100%;
-    }
-
-    .date-time-input {
-        padding-right: 45px !important; /* Espace pour l'icône */
-    }
-
-    .date-icon, .time-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #818181;
-        pointer-events: none;
-        font-size: 16px;
-    }
-
-    /* Correction pour les inputs date/time sur différents navigateurs */
-    .date-time-input::-webkit-calendar-picker-indicator {
-        background: transparent;
-        bottom: 0;
-        color: transparent;
-        cursor: pointer;
-        height: auto;
-        left: 0;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: auto;
-        opacity: 0;
-        z-index: 1;
-    }
-
-    .date-time-input::-webkit-datetime-edit-fields-wrapper {
-        padding: 0;
-    }
-
-    .date-time-input::-webkit-datetime-edit {
-        padding: 0;
-    }
-
-    .date-time-input::-webkit-inner-spin-button {
-        display: none;
-    }
-
-    .date-time-input::-webkit-clear-button {
-        display: none;
-    }
-
-    /* Pour Firefox */
-    .date-time-input {
-        -moz-appearance: textfield;
-    }
-
-    .date-time-input::-moz-focus-inner {
-        border: 0;
-    }
-
-    /* Pour assurer la visibilité sur tous les navigateurs */
-    .date-time-input:focus {
-        border-color: #ffffff;
-        outline: none;
-    }
-
-    .booking-form-input:focus, .booking-form-select:focus, .booking-form-textarea:focus {
-        border-color: #ffffff;
-        outline: none;
-    }
-
-    .booking-form-row {
-        display: flex;
-        gap: 15px;
-    }
-
-    .booking-form-row .booking-form-group {
-        flex: 1;
-    }
-
-    .booking-form-checkbox {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-        padding: 10px 0;
-    }
-
-    .booking-form-checkbox input {
-        width: 18px;
-        height: 18px;
-    }
-
-    .booking-form-submit {
-        background-color: transparent;
-        color: white;
-        border: 1px solid white;
-        border-radius: 8px;
-        padding: 16px 20px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
-        transition: all 0.3s;
-        font-family: 'Mileast', sans-serif;
-        margin-top: 10px;
-    }
-
-    .booking-form-submit:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .booking-required::after {
-        content: " *";
-        color: #e74c3c;
-    }
-
-    /* Media Queries pour la responsivité du modal */
-    @media (max-width: 768px) {
-        .booking-modal-content {
-            padding: 25px 20px;
-        }
-        
-        .booking-modal-title {
-            font-size: 1.5rem;
-        }
-        
-        .booking-form-row {
-            flex-direction: column;
-            gap: 0;
-        }
-        
-        .date-time-input {
-            padding: 12px 40px 12px 12px !important;
-        }
-        
-        .date-icon, .time-icon {
-            right: 12px;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .booking-modal {
-            padding: 10px;
-        }
-        
-        .booking-modal-content {
-            padding: 20px 15px;
-        }
-        
-        .booking-modal-title {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-        }
-        
-        .booking-form-input, .booking-form-select, .booking-form-textarea {
-            padding: 12px 14px;
-            font-size: 15px;
-        }
-        
-        .date-time-input {
-            padding: 12px 35px 12px 12px !important;
-            font-size: 15px;
-        }
-        
-        .date-icon, .time-icon {
-            right: 10px;
-            font-size: 14px;
-        }
-        
-        .booking-form-submit {
-            padding: 14px;
-            font-size: 1rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .booking-modal-content {
-            padding: 15px 12px;
-        }
-        
-        .booking-modal-title {
-            font-size: 1.2rem;
-        }
-        
-        .booking-form-group {
-            margin-bottom: 15px;
-        }
-        
-        .date-time-input {
-            padding: 10px 30px 10px 10px !important;
-        }
-        
-        .date-icon, .time-icon {
-            right: 8px;
-        }
-    }
-
-    @media (max-width: 360px) {
-        .booking-modal-title {
-            font-size: 1.1rem;
-        }
-        
-        .booking-form-input, .booking-form-select, .booking-form-textarea {
-            padding: 10px 12px;
-        }
-        
-        .date-time-input {
-            padding: 10px 28px 10px 10px !important;
-        }
-    }
-
-    /* Améliorations pour l'accessibilité mobile */
-    @media (max-width: 768px) and (orientation: landscape) {
-        .booking-modal-content {
-            max-height: 80vh;
-        }
-    }
-
-    /* Correction pour les petits écrans en hauteur */
-    @media (max-height: 600px) {
-        .booking-modal-content {
-            max-height: 85vh;
-        }
-        
-        .booking-modal-title {
-            margin-bottom: 15px;
-        }
-        
-        .booking-form-group {
-            margin-bottom: 15px;
-        }
-    }
-/* Footer */
-footer {
-  background-color: rgba(0, 0, 0, 0.9);
-  padding: 60px 20px 30px;
-}
-
-.footer-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: flex-start;
-  gap: 40px;
-  text-align: center;
-}
-
-.footer-logo {
-  flex: 1;
-  min-width: 220px;
-}
-
-.footer-logo img {
-  width: 120px;
-  height: auto;
-  margin-bottom: 10px;
-}
-
-.footer-logo p {
-  color: #ccc;
+/* Styles pour les badges de statut */
+.car-status-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
   font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.footer-menu {
-  flex: 1;
-  min-width: 220px;
+.car-status-badge.available {
+  background-color: #28a745;
+  color: white;
 }
 
-.footer-menu h3 {
-  margin-bottom: 15px;
-  font-size: 18px;
+.car-status-badge.reserved {
+  background-color: #ffc107;
+  color: black;
 }
 
-.footer-menu ul {
-  padding: 0;
-  margin: 0;
+.car-status-badge.maintenance {
+  background-color: #fd7e14;
+  color: white;
 }
 
-.footer-menu li {
-  margin-bottom: 10px;
+.car-status-badge.unavailable {
+  background-color: #dc3545;
+  color: white;
 }
 
-.footer-menu a {
-  color: #ccc;
-  transition: color 0.3s;
+.car-status.available {
+  border: 1px solid rgba(19, 167, 0, 0.438);
+  color: #28a745;
 }
 
-.footer-menu a:hover {
-  color: #818181;
+.car-status.reserved {
+  border: 1px solid rgba(255, 251, 0, 0.61);
+  color: #ffc107;
 }
 
-.footer-contact {
-  flex: 1;
-  min-width: 220px;
+.car-status.maintenance {
+  border: 1px solid rgba(255, 166, 0, 0.568);
+  color: #fd7e14;
 }
 
-.footer-contact h3 {
-  margin-bottom: 15px;
-  font-size: 18px;
+.car-status.unavailable {
+  border: 1px solid rgba(255, 0, 0, 0.356);
+  color: #dc3545;
 }
 
-.footer-contact p {
-  margin: 5px 0;
-  color: #ccc;
-}
-
-.footer-bottom {
+/* Styles pour l'affichage du prix */
+.price-display {
   text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid rgb(139, 137, 137);
+}
+
+.price-display h4 {
+  font-size: 28px;
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+/* Styles pour la section description */
+.description-section {
   margin-top: 40px;
-  font-size: 14px;
-  color: #aaa;
-  border-top: 1px solid #333;
-  padding-top: 15px;
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgb(139, 137, 137);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
 }
 
-.footer-bottom span {
-  color: #ff4d4d;
+.description-section h3 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-/* Media Queries */
-@media (max-width: 1395px) {
-  .gallery-container-main {
-    max-width: 100%;
+.description-content {
+  color: #ffffff;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.description-content p {
+  margin: 0;
+  text-align: justify;
+}
+
+/* Bouton désactivé */
+.booking-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #666 !important;
+}
+
+.booking-btn.disabled:hover {
+  background-color: #666 !important;
+  transform: none !important;
+}
+
+/* Nouvelles spécifications */
+.Catégorie, .Marque {
+  border: 1px solid #ffffff49;
+  border-radius: 10px;
+  padding: 25px;
+  background-color: transparent;
+  transition: transform 0.3s;
+}
+
+.Catégorie:hover, .Marque:hover {
+  transform: translateY(-5px);
+}
+
+.Catégorie .fa-solid, .Marque .fa-solid {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 15px;
+  font-size: 28px;
+  color: #ffffff;
+}
+
+.Catégorie h4, .Marque h4 {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  font-size: 20px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.Catégorie p, .Marque p {
+  margin: 20px 0 0 0;
+  color: #ffffff93;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* ===== MEDIA QUERIES POUR MOBILE ===== */
+@media (max-width: 768px) {
+  .swiper-button-prev, .swiper-button-next {
+    display: none;
   }
-  
-  .gallery-thumbnail-swiper .swiper-wrapper {
-    justify-content: center;
-  }
-}
 
-@media (min-width: 1025px) and (max-width: 1295px) {
-  .gallery-and-contact-container {
-    max-width: 100%;
-    padding: 30px 20px;
+  .hero-about {
+    padding: 28% 5% 10%;
+    min-height: auto;
+    background-attachment: scroll;
+  }
+
+  .Section-header-about {
+    margin-bottom: 30px;
+  }
+
+  .container-about {
     gap: 25px;
   }
-  
-  .gallery-page {
-    flex: 1;
-    max-width: 65%;
+
+  #poster-about {
+    max-width: 90%;
   }
-  
-  .contact-pricing-sidebar {
-    flex: 0 0 300px;
+
+  .slide-image {
+    height: 50%;
   }
-  
-  .gallery-main-image {
-    height: 400px;
+
+  .swiper-header h2 {
+    margin-bottom: 10px;
   }
-  
-  .gallery-content {
-    padding: 30px 25px;
+
+  .swiper {
+    height: 450px;
   }
-  
-  .gallery-thumbnail-container {
-    padding: 0 25px;
+
+  .swiper-slide{
+    height: auto;
   }
-  
-  .gallery-thumb-slide {
-    width: 130px;
-    height: 90px;
+
+  .categories {
+    gap: 20px;
   }
-  
-  .gallery-thumbnail-swiper {
-    height: 110px;
+
+  .category {
+    font-size: 16px;
   }
-  
-  .spécifications-container {
+
+  .hero{
+    flex-direction: column;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .hero-logo {
+    margin-bottom: 10px;
+  }
+
+  .hero-text h1 {
+    font-size: 40px;
+  }
+
+  .btn-group {
+    padding: 0;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
+  }
+
+  .btn {
+    text-align: center;
+    margin: 0;
+  }
+
+  .btn-primary:hover {
+    background-color: #030303;
+    border: 2px solid white;
+  }
+
+  .btn-secondary:hover {
+    background-color: rgb(128, 128, 128);
+    border: 2px solid white;
+  }
+
+  .card{
+    width: 300px;
+  }
+
+  .hero-cars-content{
+    padding: 20px;
+  }
+
+  .hero-cars {
+    height: 45vh;
+  }
+
+  .hero-cars-text p{
+    text-align: center;
+  }
+
+  .hero-cars-text h1{
+    font-size: 30px;
+    text-align: center;
+  }
+
+  .hero-cars-text p{
+    padding-top: 10px;
+  }
+
+  /* CORRECTION DES DROPDOWNS MOBILE */
+  .drop-filter {
     max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+    padding: 10px 20px;
   }
-  
-  .spécifications-container > div {
+
+  .custom-dropdown-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #000000;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+    border: 1px solid rgb(139, 137, 137);
+    width: 100%;
+  }
+
+  .custom-dropdown-mobile span {
+    font-weight: normal;
+    margin-left: 4px;
+    color: #ccc;
+  }
+
+  .custom-dropdown-mobile i {
+    color: #ccc;
+  }
+
+  .custom-dropdown-card {
+    display: none;
+    position: absolute;
+    background-color: #000000;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid rgb(139, 137, 137);
+    width: 90%;
+    top: 60px;
+    left: auto;
+    z-index: 1000;
+  }
+
+  .custom-dropdown {
+    position: relative;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .custom-dropdown input[type="checkbox"] {
+    display: none;
+  }
+
+  .custom-dropdown label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #000000;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    border: 1px solid rgb(139, 137, 137);
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .custom-dropdown label::after {
+    content: "\f078";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: #ccc;
+    transition: transform 0.3s ease;
+  }
+
+  .custom-dropdown input[type="checkbox"]:checked + label::after {
+    transform: rotate(180deg);
+  }
+
+  .custom-dropdown ul {
+    display: none;
+    list-style: none;
+    margin-top: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgb(139, 137, 137);
+    background-color: #000000;
+  }
+
+  .custom-dropdown input[type="checkbox"]:checked ~ ul {
+    display: block;
+  }
+
+  .custom-dropdown ul li {
+    padding: 12px 16px;
+    background-color: #000000;
+    color: white;
+    border-bottom: 1px solid rgb(139, 137, 137);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .custom-dropdown ul li:last-child {
+    border-bottom: none;
+  }
+
+  .custom-dropdown ul li:hover {
+    background-color: #1a1a1a;
+  }
+
+  .drop-car {
+    color: white;
+    font-size: 14px;
+    display: inline-block !important;
+  }
+
+  .filter-results button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    background-color: #000000;
+    color: white;
+    border: 1px solid rgb(139, 137, 137);
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-family: Mileast, sans-serif;
+    gap: 15px;
+  }
+
+  .filter-results button i {
+    margin-left: 8px;
+  }
+
+  .filter-results button span {
+    margin-left: 4px;
+    font-weight: normal;
+  }
+
+  /* Animation pour l'affichage de la card */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .show-card {
+    display: block !important;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .filter-menu{
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .filter-btn:hover{
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  .hero-cars-text p{
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .car-card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
     padding: 20px;
+    justify-items: center; /* Centre les cartes dans chaque cellule de grille */
+    align-items: start;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
   }
-  
-  .pricing-card {
-    padding: 20px;
+
+  .car-card {
+    width: 100%;
+    max-width: 320px; /* Limite la largeur maximale */
+    margin: 0 auto; /* Centre la carte dans sa cellule */
   }
-  
-  .pricing-card h3 {
-    font-size: 20px;
+
+  .car-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .filter-options{
+    align-items: center;
+    padding-right: 0px;
+  }
+
+  .footer-menu ul {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  /* CORRECTIONS RESPONSIVE POUR LES CARTES */
+  /* .car-info {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  } */
+
+  .car-button-container {
+    width: 100%;
+  }
+
+  .view-details-btn {
+    margin-top: 10%;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .swiper-slide{
+    height: 80%;
+  }
+
+  .swiper-header h2 {
+    margin-bottom: 10px;
+  }
+
+  .car-swiper{
+    height: 75vh;
+  }
+
+  .navbar {
+    padding: 8px 3%;
+  }
+
+  .hero{
+    height: 100vh;
+  }
+
+  .hero-cars {
+    height: 85vh;
+  }
+
+  .hero-cars {
+    height: 40vh;
+  }
+
+  .hero-text h1 {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .hero-about {
+    padding: 30% 5% 15%;
+  }
+
+  .Section-header-about h4 {
+    font-size: 12px;
+  }
+
+  .container-about p {
+    text-align: justify-center;
+    hyphens: auto;
+  }
+
+  #poster-about {
+    max-width: 95%;
+  }
+
+  .slide-content {
+    height: auto;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .map-container {
+    height: 250px;
+  }
+
+  .cards-container {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-options{
+    align-items: center;
+    padding-right: 0px;
+  }
+
+  .car-card-container {
+    grid-template-columns: 1fr; /* Une seule colonne sur très petits écrans */
+    justify-items: center;
+    padding: 15px;
+  }
+
+  .car-card {
+    max-width: 100%; /* Utilise toute la largeur disponible */
+  }
+
+  .view-details-btn {
+    margin-top: 10%;
   }
 }
 
+/* Media Queries supplémentaires pour la page de détails */
 @media (max-width: 1024px) {
   .gallery-and-contact-container {
     flex-direction: column;
     gap: 20px;
     align-items: center;
   }
-  
+
   .contact-pricing-sidebar {
     flex: 1;
     position: static;
@@ -2463,7 +2149,7 @@ footer {
     width: 100%;
     max-width: 500px;
   }
-  
+
   .gallery-page {
     width: 100%;
     max-width: 100%;
@@ -2474,94 +2160,92 @@ footer {
   .burger {
     display: block;
   }
-  
+
   .menu {
     display: none;
   }
-  
+
   .hero-cars-details {
     height: 40vh;
   }
-  
-  .hero-cars-details-content {
-    bottom: 15%;
-    left: 5%;
-    right: 5%;
-  }
-  
-  .hero-cars-details-text h1 {
-    font-size: 28px;
-  }
-  
-  .hero-cars-details-text p {
-    font-size: 16px;
-    padding-top: 10px;
-  }
-  
+
   .gallery-and-contact-container {
     padding: 20px 15px;
   }
-  
+
   .pricing-card {
     padding: 20px;
   }
-  
+
   .pricing-card h3 {
     font-size: 20px;
   }
-  
+
   .contact-details p {
     font-size: 15px;
   }
-  
+
   .gallery-content {
     padding: 20px;
   }
-  
+
   .gallery-main-image {
     height: 300px;
   }
-  
+
   .gallery-thumbnail-container {
     padding: 0 20px;
   }
-  
+
   .gallery-nav-btn {
     width: 40px;
     height: 40px;
   }
-  
+
   .gallery-thumbnail-swiper {
     height: 100px;
   }
-  
+
   .gallery-thumb-slide {
     width: 120px;
     height: 80px;
   }
-  
+
   .spécifications-container {
     grid-template-columns: 1fr;
     gap: 15px;
     max-width: 100%;
   }
-  
+
   .spécifications-container > div {
     padding: 20px;
   }
-  
+
   .spécifications-container > div .fa-solid {
     font-size: 24px;
     margin-right: 12px;
   }
-  
+
   .spécifications-container > div h4 {
     font-size: 18px;
   }
-  
+
   .spécifications-container > div p {
     font-size: 15px;
     margin-top: 15px;
+  }
+
+  .description-section {
+    padding: 20px;
+    margin-top: 30px;
+  }
+
+  .description-section h3 {
+    font-size: 20px;
+  }
+
+  .description-content {
+    font-size: 15px;
   }
 }
 
@@ -2569,55 +2253,52 @@ footer {
   .hero-cars-details {
     height: 50vh;
   }
-  
+
   .hero-cars-details-text h1 {
     font-size: 24px;
   }
-  
+
   .hero-cars-details-text p {
     font-size: 14px;
   }
-  
-  .gallery-page {
-    padding: 30px 10px;
-  }
-  
+
+
   .gallery-main-image {
     height: 250px;
   }
-  
+
   .gallery-thumbnail-swiper {
     height: 80px;
   }
-  
+
   .gallery-thumb-slide {
     width: 100px;
     height: 70px;
   }
-  
+
   .gallery-navigation {
     padding: 0 10px;
   }
-  
+
   .gallery-nav-btn {
     width: 35px;
     height: 35px;
     font-size: 1rem;
   }
-  
+
   .gallery-counter {
     font-size: 0.8rem;
     padding: 6px 12px;
   }
-  
+
   .Spécifications h3 {
     font-size: 20px;
   }
-  
+
   .spécifications-container > div {
     padding: 15px;
   }
-  
+
   .gallery-header h1 {
     font-size: 24px;
   }
@@ -2627,136 +2308,251 @@ footer {
   .navbar {
     padding: 8px 3%;
   }
-  
+
   #logo {
     width: 70px;
     height: 70px;
   }
-  
+
   .hero-cars-details {
     height: 55vh;
   }
-  
+
   .gallery-thumb-slide {
     width: 90px;
     height: 60px;
   }
-  
+
   .gallery-content {
     padding: 15px;
   }
-  
+
   .gallery-thumbnail-container {
     padding: 0 15px;
   }
-  
+
   .spécifications-container > div {
     padding: 12px;
   }
-  
+
   .spécifications-container > div .fa-solid {
     font-size: 20px;
     margin-right: 8px;
   }
-  
+
   .spécifications-container > div h4 {
     font-size: 16px;
   }
-  
+
   .spécifications-container > div p {
     font-size: 14px;
     margin-top: 10px;
   }
 }
 
-@media (min-width: 1600px) {
-  .gallery-and-contact-container {
-    max-width: 1500px;
-  }
-  
-  .gallery-page {
-    max-width: 1000px;
-  }
-  
-  .contact-pricing-sidebar {
-    flex: 0 0 380px;
-  }
-}
-
-
-
-
-
-
-
-/* Styles pour les filtres */
-.filter-btn.active {
-    background-color: #333;
-    color: white;
-}
-
-.custom-dropdown ul li.selected {
-    background-color: #f0f0f0;
-    color: #333;
-}
-
-.custom-dropdown ul li.selected .fa-check {
-    opacity: 1;
-}
-
-/* Modal de chargement */
-.loading-modal {
+/* Modal de Réservation */
+.booking-modal {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.booking-modal.active {
     display: flex;
-    justify-content: center;
+    opacity: 1;
     align-items: center;
-    z-index: 1000;
+    justify-content: center;
 }
 
-.loading-content {
-    background: white;
+.booking-modal-content {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgb(139, 137, 137);
+    border-radius: 15px;
     padding: 30px;
-    border-radius: 10px;
-    text-align: center;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    backdrop-filter: blur(10px);
 }
 
-.loading-spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #333;
+.booking-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.booking-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive pour le compteur mobile */
-.custom-dropdown-mobile {
-    display: none;
+.booking-modal-title {
+    color: white;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+    font-weight: 600;
 }
 
+/* Formulaire de réservation */
+.booking-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.booking-form-group {
+    flex: 1;
+    margin-bottom: 15px;
+}
+
+.booking-form-label {
+    display: block;
+    color: white;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.booking-form-label.booking-required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.booking-form-input,
+.booking-form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgb(139, 137, 137);
+    border-radius: 8px;
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.booking-form-input:focus,
+.booking-form-textarea:focus {
+    outline: none;
+    border-color: white;
+}
+
+.booking-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Conteneurs pour les inputs date/time */
+.date-input-container,
+.time-input-container {
+    position: relative;
+}
+
+.date-icon,
+.time-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ccc;
+    pointer-events: none;
+}
+
+.date-time-input {
+    padding-right: 45px;
+}
+
+/* Résumé de réservation */
+.booking-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgb(139, 137, 137);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.booking-summary h4 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.summary-details p {
+    color: #ccc;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.summary-details strong {
+    color: white;
+}
+
+/* Bouton de soumission */
+.booking-form-submit {
+    width: 100%;
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.booking-form-submit:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Styles pour les inputs date/time sur mobile */
 @media (max-width: 768px) {
-    .custom-dropdown-mobile {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        background: #f5f5f5;
-        border-radius: 5px;
-        margin-bottom: 15px;
+    .booking-form-row {
+        flex-direction: column;
+        gap: 0;
     }
     
-    .custom-dropdown-card {
-        display: none;
+    .booking-modal-content {
+        padding: 20px;
+        margin: 20px;
+        width: calc(100% - 40px);
     }
+    
+    .booking-modal-title {
+        font-size: 20px;
+    }
+}
+
+/* Personnalisation du calendrier */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
 }

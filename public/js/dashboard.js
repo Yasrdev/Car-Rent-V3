@@ -951,6 +951,227 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // === GESTION DES IMAGES MULTIPLES POUR LES VOITURES ===
+    function initImageUpload() {
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const carImagesInput = document.getElementById('carImages');
+        const selectImagesBtn = document.getElementById('selectImagesBtn');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageCounter = document.getElementById('imageCounter');
+        const currentImageCount = document.getElementById('currentImageCount');
+
+        if (!imageUploadArea || !carImagesInput) return;
+
+        let uploadedFiles = [];
+
+        // Ouvrir le sélecteur de fichiers
+        selectImagesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            carImagesInput.click();
+        });
+
+        // Clic sur la zone de drop
+        imageUploadArea.addEventListener('click', () => {
+            carImagesInput.click();
+        });
+
+        // Drag and drop
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = '#2ecc71';
+            imageUploadArea.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.style.borderColor = 'rgb(139, 137, 137)';
+            imageUploadArea.style.backgroundColor = 'transparent';
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'rgb(139, 137, 137)';
+            imageUploadArea.style.backgroundColor = 'transparent';
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleImageSelection(e.dataTransfer.files);
+            }
+        });
+
+        // Sélection via input file
+        carImagesInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageSelection(e.target.files);
+            }
+        });
+
+        function handleImageSelection(files) {
+            const availableSlots = 5 - uploadedFiles.length;
+            
+            if (files.length > availableSlots) {
+                showServerMessage('carFormServerMessage', `Vous ne pouvez ajouter que ${availableSlots} image(s) supplémentaire(s)`, 'error');
+                return;
+            }
+
+            for (let i = 0; i < Math.min(files.length, availableSlots); i++) {
+                const file = files[i];
+                
+                // Validation du type de fichier
+                if (!file.type.startsWith('image/')) {
+                    showServerMessage('carFormServerMessage', `Le fichier "${file.name}" n'est pas une image valide`, 'error');
+                    continue;
+                }
+
+                // Validation de la taille (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    showServerMessage('carFormServerMessage', `L'image "${file.name}" est trop volumineuse (max 5MB)`, 'error');
+                    continue;
+                }
+
+                // Vérifier si le fichier n'est pas déjà uploadé
+                const isDuplicate = uploadedFiles.some(existingFile => 
+                    existingFile.name === file.name && existingFile.size === file.size
+                );
+
+                if (!isDuplicate) {
+                    uploadedFiles.push(file);
+                    createImagePreview(file, uploadedFiles.length - 1);
+                }
+            }
+
+            updateImageCounter();
+            updateFileInput();
+        }
+
+        function createImagePreview(file, index) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'preview-image';
+                previewContainer.style.position = 'relative';
+                previewContainer.style.borderRadius = '8px';
+                previewContainer.style.overflow = 'hidden';
+                previewContainer.style.border = '1px solid rgb(139, 137, 137)';
+                previewContainer.style.background = 'rgba(0, 0, 0, 0.6)';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '5px';
+                removeBtn.style.right = '5px';
+                removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.color = 'white';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.fontSize = '12px';
+                removeBtn.style.transition = 'all 0.2s ease';
+
+                removeBtn.addEventListener('mouseenter', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 1)';
+                    removeBtn.style.transform = 'scale(1.1)';
+                });
+
+                removeBtn.addEventListener('mouseleave', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                    removeBtn.style.transform = 'scale(1)';
+                });
+
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    uploadedFiles.splice(index, 1);
+                    previewContainer.remove();
+                    updateImageCounter();
+                    updateFileInput();
+                    // Recréer tous les previews pour mettre à jour les index
+                    recreatePreviews();
+                });
+
+                const imageInfo = document.createElement('div');
+                imageInfo.style.position = 'absolute';
+                imageInfo.style.bottom = '0';
+                imageInfo.style.left = '0';
+                imageInfo.style.right = '0';
+                imageInfo.style.background = 'rgba(0, 0, 0, 0.7)';
+                imageInfo.style.color = 'white';
+                imageInfo.style.padding = '2px 5px';
+                imageInfo.style.fontSize = '10px';
+                imageInfo.style.textOverflow = 'ellipsis';
+                imageInfo.style.overflow = 'hidden';
+                imageInfo.style.whiteSpace = 'nowrap';
+                imageInfo.textContent = file.name;
+
+                previewContainer.appendChild(img);
+                previewContainer.appendChild(removeBtn);
+                previewContainer.appendChild(imageInfo);
+                imagePreview.appendChild(previewContainer);
+                
+                imagePreview.style.display = 'grid';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function recreatePreviews() {
+            imagePreview.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                createImagePreview(file, index);
+            });
+            updateImageCounter();
+        }
+
+        function updateImageCounter() {
+            const count = uploadedFiles.length;
+            currentImageCount.textContent = count;
+            
+            if (count === 0) {
+                imagePreview.style.display = 'none';
+                imageCounter.style.color = '#888';
+            } else if (count === 5) {
+                imageCounter.style.color = '#2ecc71';
+            } else {
+                imageCounter.style.color = '#f39c12';
+            }
+        }
+
+        function updateFileInput() {
+            // Créer un nouveau DataTransfer pour mettre à jour les fichiers
+            const dataTransfer = new DataTransfer();
+            uploadedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            carImagesInput.files = dataTransfer.files;
+        }
+
+        // Réinitialiser les images quand le modal est fermé
+        document.getElementById('closeCarModal')?.addEventListener('click', resetImageUpload);
+        document.getElementById('cancelCarModal')?.addEventListener('click', resetImageUpload);
+
+        function resetImageUpload() {
+            imagePreview.innerHTML = '';
+            imagePreview.style.display = 'none';
+            carImagesInput.value = '';
+            uploadedFiles = [];
+            updateImageCounter();
+        }
+    }
+
+    // Initialiser l'upload d'images multiples
+    initImageUpload();
+
     // === MODAL AJOUT VOITURE ===
     if (openCarModalBtn) {
         openCarModalBtn.addEventListener('click', function() {
@@ -975,6 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'carModel', validator: (val) => val.trim().length > 0, message: 'Le modèle est requis' },
             { id: 'carCategory', validator: (val) => val !== '', message: 'La catégorie est requise' },
             { id: 'carYear', validator: (val) => val >= 2000 && val <= 2030, message: 'L\'année doit être entre 2000 et 2030' },
+            { id: 'carColor', validator: (val) => val.trim().length > 0, message: 'La couleur est requise' },
             { id: 'carLicensePlate', validator: (val) => val.trim().length > 0, message: 'La plaque est requise' },
             { id: 'carDailyPrice', validator: (val) => val > 0, message: 'Le prix doit être positif' },
             { id: 'carFuelType', validator: (val) => val !== '', message: 'Le type de carburant est requis' },
@@ -991,6 +1213,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 setFormSuccess('addCarForm', field.id);
             }
         });
+
+        // Validation des images
+        const carImagesInput = document.getElementById('carImages');
+        if (!carImagesInput || carImagesInput.files.length === 0) {
+            setFormError('addCarForm', 'carImages', 'Au moins une image est requise');
+            isValid = false;
+        } else if (carImagesInput.files.length > 5) {
+            setFormError('addCarForm', 'carImages', 'Maximum 5 images autorisées');
+            isValid = false;
+        } else {
+            setFormSuccess('addCarForm', 'carImages');
+        }
 
         return isValid;
     }
@@ -1442,6 +1676,13 @@ document.addEventListener('DOMContentLoaded', function() {
             element.textContent = message;
             element.style.display = 'block';
             element.className = 'server-message ' + type;
+            
+            // Masquer automatiquement après 5 secondes pour les erreurs
+            if (type === 'error') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
         }
     }
 

@@ -3,7 +3,7 @@
     
     <!-- Logo + texte -->
     <div class="footer-logo">
-      <img src="/assets/images/bariz-logo.png" alt="Logo">
+      <img src="././public/images/bariz-logo.png" alt="Logo">
       <p>Des voitures d’exception, un service irréprochable.</p>
     </div>
 

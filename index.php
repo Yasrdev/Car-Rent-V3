@@ -7,6 +7,27 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
 
 <?php if ($page == 'home') : ?>
+    <?php
+require_once './config/db-config.php';
+require_once './models/Car.php';
+require_once './models/CarBrand.php';
+require_once './models/CarCategory.php';
+
+
+    // Initialiser les modèles
+    $carModel = new Car($pdo);
+    $brandModel = new CarBrand($pdo);
+    $categoryModel = new CarCategory($pdo);
+    
+    // Récupérer toutes les données nécessaires
+    $cars = $carModel->getAllCars();
+    $brands = $brandModel->getAllBrands();
+    $categories = $categoryModel->getAllCategories();
+    
+    $totalCars = count($cars);
+    
+
+?>
 <!-- Section Accueil -->
   <section class="hero">
     <video autoplay muted loop id="bg-video">
@@ -39,89 +60,51 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'home';
     <div class="swiper">
       <div class="swiper-wrapper">
         <!-- Slide 1 -->
+         <?php if (isset($error)): ?>
+          <div class="error-message"><?php echo $error; ?></div>
+      <?php elseif (empty($cars)): ?>
+          <div class="no-cars-message" style="color: white;">Aucune voiture disponible pour le moment.</div>
+      <?php else: ?>
+          <?php foreach ($cars as $car): ?>
+                      <?php
+          $brand = $brandModel->getBrandById($car['brand_id']);
+          $category = $categoryModel->getCategoryById($car['category_id']);
+          
+          // Déterminer le statut et la classe CSS
+          $statusText = 'Disponible';
+          $statusClass = 'available';
+          if ($car['status'] === 'réservé') {
+              $statusText = 'Réservé';
+              $statusClass = 'reserved';
+          } elseif ($car['status'] === 'en maintenance') {
+              $statusText = 'Maintenance';
+              $statusClass = 'maintenance';
+          } elseif ($car['status'] === 'indisponible') {
+              $statusText = 'Indisponible';
+              $statusClass = 'unavailable';
+          }
+          
+          $carImage = !empty($car['main_image_url']) ? '././public/' . $car['main_image_url'] : '././public/images/mercedess.png';
+          ?>
         <div class="swiper-slide">
           <div class="slide-image">
-            <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Véhicule Tout-Terrain">
+           <img src="<?php echo $carImage; ?>" alt="<?php echo htmlspecialchars($brand ? $brand['name'] : 'Marque'); ?> <?php echo htmlspecialchars($car['model']); ?>">
           </div>
           <div class="slide-content">
             <div>
-              <h3 class="slide-title">Explorer Pro 4x4</h3>
-              <p class="slide-description">Conçu pour les aventures les plus extrêmes, ce véhicule combine puissance et élégance.</p>
+              <h3 class="slide-title"><?php echo htmlspecialchars($brand ? $brand['name'] : 'Marque inconnue'); ?></h3>
+              <p class="slide-description"><?php echo htmlspecialchars($car['model']); ?> • <?php echo htmlspecialchars($car['year']); ?></p>
             </div>
             <div class="slide-footer">
-              <div class="slide-price">À partir de 89 900€</div>
-              <button class="slide-button">Découvrir</button>
+              <div class="slide-price"><?php echo number_format($car['daily_price'], 0, ',', ' '); ?> €/jour</div>
+                <button class="slide-button-home view-details-btn-home" data-car-id="<?php echo $car['id']; ?>">
+                    <?php echo $car['status'] === 'disponible' ? 'Découvrir' : 'Indisponible'; ?>
+                </button>
             </div>
           </div>
         </div>
-        
-        <!-- Slide 2 -->
-        <div class="swiper-slide">
-          <div class="slide-image">
-            <img src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2025&q=80" alt="Voiture de Luxe">
-          </div>
-          <div class="slide-content">
-            <div>
-              <h3 class="slide-title">Luxury GT</h3>
-              <p class="slide-description">Élégance intemporelle et performances exceptionnelles pour les connaisseurs.</p>
-            </div>
-            <div class="slide-footer">
-              <div class="slide-price">À partir de 245 000€</div>
-              <button class="slide-button">Découvrir</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Slide 3 -->
-        <div class="swiper-slide">
-          <div class="slide-image">
-            <img src="https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2064&q=80" alt="Moto">
-          </div>
-          <div class="slide-content">
-            <div>
-              <h3 class="slide-title">Urban Rider</h3>
-              <p class="slide-description">Une moto présentée et dégustée par les passionnés de deux roues.</p>
-            </div>
-            <div class="slide-footer">
-              <div class="slide-price">À partir de 18 500€</div>
-              <button class="slide-button">Découvrir</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Slide 4 -->
-        <div class="swiper-slide">
-          <div class="slide-image">
-            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="SUV de Luxe">
-          </div>
-          <div class="slide-content">
-            <div>
-              <h3 class="slide-title">Prestige SUV</h3>
-              <p class="slide-description">Alliant confort suprême et capacités tout-terrain pour les plus exigeants.</p>
-            </div>
-            <div class="slide-footer">
-              <div class="slide-price">À partir de 125 000€</div>
-              <button class="slide-button">Découvrir</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Slide 5 -->
-        <div class="swiper-slide">
-          <div class="slide-image">
-            <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2064&q=80" alt="Sport Car">
-          </div>
-          <div class="slide-content">
-            <div>
-              <h3 class="slide-title">Sport Elite</h3>
-              <p class="slide-description">Performance pure et design aérodynamique pour les amateurs de sensations fortes.</p>
-            </div>
-            <div class="slide-footer">
-              <div class="slide-price">À partir de 320 000€</div>
-              <button class="slide-button">Découvrir</button>
-            </div>
-          </div>
-        </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
       </div>
       
       <!-- Pagination -->
@@ -278,7 +261,7 @@ require_once './models/CarCategory.php';
       <?php if (isset($error)): ?>
           <div class="error-message"><?php echo $error; ?></div>
       <?php elseif (empty($cars)): ?>
-          <div class="no-cars-message">Aucune voiture disponible pour le moment.</div>
+          <div class="no-cars-message" style="color: white;">Aucune voiture disponible pour le moment.</div>
       <?php else: ?>
           <?php foreach ($cars as $car): ?>
           <?php
@@ -313,8 +296,7 @@ require_once './models/CarCategory.php';
                       <p><?php echo htmlspecialchars($car['model']); ?> • <?php echo htmlspecialchars($car['year']); ?></p>
                       <p class="car-price"><?php echo number_format($car['daily_price'], 0, ',', ' '); ?> €/jour</p>
                   </div>
-                  <button class="slide-button <?php echo $car['status'] !== 'disponible' ? 'disabled' : ''; ?> view-details-btn" 
-                          data-car-id="<?php echo $car['id']; ?>">
+                  <button class="slide-button view-details-btn" data-car-id="<?php echo $car['id']; ?>">
                       <?php echo $car['status'] === 'disponible' ? 'Découvrir' : 'Indisponible'; ?>
                   </button>
               </div>
@@ -332,121 +314,210 @@ require_once './models/CarCategory.php';
   </div>
 
 <?php elseif ($page == 'Voitures-Detailles') :?>
+<?php
+require_once './config/db-config.php';
+require_once './models/Car.php';
+require_once './models/CarBrand.php';
+require_once './models/CarCategory.php';
+require_once './models/CarImage.php';
+
+// Récupérer l'ID de la voiture depuis l'URL
+$car_id = isset($_GET['car_id']) ? intval($_GET['car_id']) : 0;
+
+// Initialiser les modèles
+$carModel = new Car($pdo);
+$brandModel = new CarBrand($pdo);
+$categoryModel = new CarCategory($pdo);
+$carImageModel = new CarImage($pdo);
+
+// Récupérer les données de la voiture
+$car = $carModel->getCarById($car_id);
+
+if (!$car) {
+    // Rediriger si la voiture n'existe pas
+    header('Location: index.php?page=Voitures');
+    exit;
+}
+
+// Récupérer les informations liées
+$brand = $brandModel->getBrandById($car['brand_id']);
+$category = $categoryModel->getCategoryById($car['category_id']);
+$carImages = $carImageModel->getImagesByCarId($car_id);
+
+// Si pas d'images spécifiques, utiliser l'image principale
+if (empty($carImages) && !empty($car['main_image_url'])) {
+    $carImages = [
+        ['image_url' => $car['main_image_url'], 'image_order' => 0]
+    ];
+}
+
+// Déterminer le statut
+$statusText = 'Disponible';
+$statusClass = 'available';
+if ($car['status'] === 'réservé') {
+    $statusText = 'Réservé';
+    $statusClass = 'reserved';
+} elseif ($car['status'] === 'en maintenance') {
+    $statusText = 'Maintenance';
+    $statusClass = 'maintenance';
+} elseif ($car['status'] === 'indisponible') {
+    $statusText = 'Indisponible';
+    $statusClass = 'unavailable';
+}
+?>
 <!-- Section Hero -->
 <section class="hero-cars-details">
     <div class="image-container-details">
-      <img src="././public/images/car-2.jpg" alt="" id="CarBackground">
+        <?php if (!empty($car['main_image_url'])): ?>
+            <img src="./public/<?php echo htmlspecialchars($car['main_image_url']); ?>" alt="<?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>" id="CarBackground">
+        <?php else: ?>
+            <img src="./public/images/car-2.jpg" alt="Image par défaut" id="CarBackground">
+        <?php endif; ?>
     </div>
     <div class="smoke-effect-realistic"></div>
   
     <div class="hero-cars-details-content">
-        
-       <div class="hero-cars-details-text">
-        <h1>Voitures de Luxe</h1>
-        <p>Explorez notre collection exclusive des voitures les plus prestigieuses au monde, des bolides sportifs ultra-performants aux modèles classiques intemporels.</p>
+        <div class="hero-cars-details-text">
+            <p><?php echo htmlspecialchars($category['name']); ?></p>
+            <h1><?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?></h1>
+            <h3>Modèle <?php echo htmlspecialchars($car['year']); ?></h3>
         </div>
-        <!-- <div class="hero-cars-overlay">Sport</div> -->
     </div>
-  </section>
+</section>
 
 <div class="gallery-and-contact-container">
- <section class="gallery-page">
-  <!-- <button class="retour-btn"><img src="/assets/images/chevron-gauche.png" alt=""><span>Retour</span></button> -->
-    <div class="gallery-header">
-      <h1>COLLECTIONS SIGNATURE</h1>
-    </div>
-  <div class="gallery-container-main">
-    <div class="gallery-content">
-      <div class="gallery-main-image">
-        <img id="galleryMainImage" class="gallery-image-display" src="././public/images/car-1.png" alt="Voiture de luxe">
-        <div class="gallery-counter">
-          <span id="galleryCurrentImage">1</span> / <span id="galleryTotalImages">5</span>
+    <section class="gallery-page">
+        <div class="gallery-header">
+            <h1>Galerie</h1>
         </div>
         
-        <div class="gallery-navigation">
-          <div id="galleryPrevBtn" class="gallery-nav-btn disabled">
-            <i class="fas fa-chevron-left"></i>
-          </div>
-          <div id="galleryNextBtn" class="gallery-nav-btn">
-            <i class="fas fa-chevron-right"></i>
-          </div>
+        <div class="gallery-container-main">
+            <div class="gallery-content">
+                <div class="gallery-main-image">
+                    <?php if (!empty($carImages)): ?>
+                        <img id="galleryMainImage" class="gallery-image-display" src="././public/<?php echo htmlspecialchars($carImages[0]['image_url']); ?>" alt="<?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>">
+                    <?php else: ?>
+                        <img id="galleryMainImage" class="gallery-image-display" src="././public/images/car-1.png" alt="Image par défaut">
+                    <?php endif; ?>
+                    <div class="gallery-counter">
+                        <span id="galleryCurrentImage">1</span> / <span id="galleryTotalImages"><?php echo count($carImages); ?></span>
+                    </div>
+                    
+                    <div class="gallery-navigation">
+                        <div id="galleryPrevBtn" class="gallery-nav-btn disabled">
+                            <i class="fas fa-chevron-left"></i>
+                        </div>
+                        <div id="galleryNextBtn" class="gallery-nav-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <?php if (!empty($carImages)): ?>
+                <div class="gallery-thumbnail-container">
+                    <div class="swiper gallery-thumbnail-swiper">
+                        <div class="swiper-wrapper">
+                            <?php foreach ($carImages as $index => $image): ?>
+                              <div class="swiper-slide gallery-thumb-slide <?php echo $index === 0 ? 'gallery-thumb-slide-active' : ''; ?>" 
+                                  data-image="./public/<?php echo htmlspecialchars($image['image_url']); ?>" 
+                                  data-index="<?php echo $index; ?>">
+                                  <img src="./public/<?php echo htmlspecialchars($image['image_url']); ?>" alt="Vue <?php echo $index + 1; ?> de <?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>">
+                              </div>
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <div class="swiper-pagination gallery-pagination"></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
-      </div>
-      
-      <div class="gallery-thumbnail-container">
-        <div class="swiper gallery-thumbnail-swiper">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide gallery-thumb-slide gallery-thumb-slide-active" data-image="/assets/images/car-1.png" data-index="0">
-              <img src="././public/images/car-1.png" alt="Voiture 1">
-            </div>
-            <div class="swiper-slide gallery-thumb-slide" data-image="././public/images/car-1.png" data-index="1">
-              <img src="././public/images/car-1.png" alt="Voiture 2">
-            </div>
-            <div class="swiper-slide gallery-thumb-slide" data-image="././public/images/car-1.png" data-index="2">
-              <img src="././public/images/car-1.png" alt="Voiture 3">
-            </div>
-            <div class="swiper-slide gallery-thumb-slide" data-image="././public/images/car-1.png" data-index="3">
-              <img src="././public/images/car-1.png" alt="Voiture 4">
-            </div>
-            <div class="swiper-slide gallery-thumb-slide" data-image="././public/images/car-1.png" data-index="4">
-              <img src="././public/images/car-1.png" alt="Voiture 5">
-            </div>
-          </div>
-          
-          <div class="swiper-pagination gallery-pagination"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-<div class="Spécifications">
-    <h3>Spécifications Techniques</h3>
-    <div class="spécifications-container">
-        <div class="moteur">
-            <i class="fa-solid fa-bolt"></i>
-            <h4>Moteur</h4>
-            <p>2.5L Turbocharged 5-cylinder</p>
+        <div class="Spécifications">
+            <h3>Spécifications Techniques</h3>
+            <div class="spécifications-container">
+                <div class="moteur">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h4>Moteur</h4>
+                    <p>
+                        <?php 
+                        $fuelTypes = [
+                            'essence' => 'Essence',
+                            'diesel' => 'Diesel', 
+                            'electrique' => 'Électrique',
+                            'hybride' => 'Hybride'
+                        ];
+                        echo htmlspecialchars($fuelTypes[$car['fuel_type']] ?? $car['fuel_type']);
+                        ?>
+                    </p>
+                </div>
+                <div class="Puissance">
+                    <i class="fa-solid fa-gears"></i>
+                    <h4>Transmission</h4>
+                    <p><?php echo htmlspecialchars($car['transmission'] === 'automatic' ? 'Automatique' : 'Manuelle'); ?></p>
+                </div>
+                <div class="Accélération">
+                    <i class="fa-solid fa-calendar"></i>
+                    <h4>Année</h4>
+                    <p><?php echo htmlspecialchars($car['year']); ?></p>
+                </div>
+                <div class="Vitesse Max">
+                    <i class="fa-solid fa-palette"></i>
+                    <h4>Couleur</h4>
+                    <p><?php echo htmlspecialchars($car['color'] ?: 'Non spécifiée'); ?></p>
+                </div>
+                <div class="Catégorie">
+                    <i class="fa-solid fa-tag"></i>
+                    <h4>Catégorie</h4>
+                    <p><?php echo htmlspecialchars($category['name']); ?></p>
+                </div>
+                <div class="Marque">
+                    <i class="fa-solid fa-industry"></i>
+                    <h4>Marque</h4>
+                    <p><?php echo htmlspecialchars($brand['name']); ?></p>
+                </div>
+            </div>
         </div>
-        <div class="Puissance">
-            <i class="fa-solid fa-gauge-high"></i>
-            <h4>Puissance</h4>
-            <p>400 chevaux</p>
+
+        <?php if (!empty($car['description'])): ?>
+        <div class="description-section">
+            <h3>Description</h3>
+            <div class="description-content">
+                <p><?php echo nl2br(htmlspecialchars($car['description'])); ?></p>
+            </div>
         </div>
-        <div class="Accélération">
-            <i class="fa-solid fa-gauge"></i>
-            <h4>Accélération</h4>
-            <p>0-100 km/h en 3.9s</p>
-        </div>
-        <div class="Vitesse Max">
-            <i class="fa-solid fa-gauge-high"></i>
-            <h4>Vitesse Max</h4>
-            <p>250 km/h</p>
-        </div>
-    </div>
-</div>
-</section>
+        <?php endif; ?>
+    </section>
 
     <!-- Section Contactez-nous pour les prix -->
     <aside class="contact-pricing-sidebar">
-      <div class="pricing-card">
-        <h3>Contactez-nous pour les prix</h3>
-        <div class="contact-info">
-          <div class="contact-person">
-            <h4>Votre contact</h4>
-            <p class="role">Sales Manager</p>
-            <div class="contact-details">
-              <p><i class="fas fa-phone"></i> +212 0 60-000-000</p>
-              <p><i class="fas fa-envelope"></i> Bariz@gmail.com</p>
+        <div class="pricing-card">
+            <h3>Tarifs de location</h3>
+            <div class="contact-info">
+                <div class="price-display">
+                    <h4><?php echo number_format($car['daily_price'], 0, ',', ' '); ?> €/jour</h4>
+                    <p class="car-status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></p>
+                </div>
+                <div class="contact-person">
+                    <h4>Votre contact</h4>
+                    <p class="role">Sales Manager</p>
+                    <div class="contact-details">
+                        <p><i class="fas fa-phone"></i> +212 0 60-000-000</p>
+                        <p><i class="fas fa-envelope"></i> Bariz@gmail.com</p>
+                    </div>
+                </div>
+                <div class="finance-options">
+                    <p>Contactez-nous pour des options de financement personnalisées</p>
+                </div>
+                <button class="booking-btn <?php echo $car['status'] !== 'disponible' ? 'disabled' : ''; ?>" 
+                        <?php echo $car['status'] !== 'disponible' ? 'disabled' : ''; ?>>
+                    <?php echo $car['status'] === 'disponible' ? 'Réserver' : 'Indisponible'; ?>
+                </button>
             </div>
-          </div>
-          <div class="finance-options">
-            <p>Contactez-nous pour des options de financement personnalisées</p>
-          </div>
-          <button class="booking-btn" >Reserver</button>
         </div>
-      </div>
     </aside>
 </div>
+
 <!-- Modal de Réservation -->
 <div class="booking-modal" id="bookingModal">
     <div class="booking-modal-content">
@@ -455,6 +526,9 @@ require_once './models/CarCategory.php';
         </button>
         <h2 class="booking-modal-title">RÉSERVER CETTE VOITURE</h2>
         <form id="bookingForm">
+            <input type="hidden" name="car_id" value="<?php echo $car_id; ?>">
+            <input type="hidden" name="car_model" value="<?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>">
+            <input type="hidden" name="daily_price" value="<?php echo $car['daily_price']; ?>">
 
             <div class="booking-form-row">
                 <div class="booking-form-group">
@@ -462,7 +536,7 @@ require_once './models/CarCategory.php';
                     <input type="text" id="booking-pickup-firstname" class="booking-form-input" name="first-name" required>
                 </div>
                 <div class="booking-form-group">
-                    <label for="booking-return-lastname" class="booking-form-label booking-required">Prenom</label>
+                    <label for="booking-return-lastname" class="booking-form-label booking-required">Prénom</label>
                     <input type="text" id="booking-return-lastname" class="booking-form-input" name="last-name" required>
                 </div>
             </div>
@@ -502,8 +576,13 @@ require_once './models/CarCategory.php';
             </div>
             
             <div class="booking-form-group">
-                <label for="booking-driver-Telephone" class="booking-form-label">Telephone</label>
-                <input type="phone" id="booking-driver-Telephone" class="booking-form-input" name="Telephone" min="21" max="80">
+                <label for="booking-driver-Telephone" class="booking-form-label booking-required">Téléphone</label>
+                <input type="tel" id="booking-driver-Telephone" class="booking-form-input" name="Telephone" required>
+            </div>
+            
+            <div class="booking-form-group">
+                <label for="booking-email" class="booking-form-label booking-required">Email</label>
+                <input type="email" id="booking-email" class="booking-form-input" name="email" required>
             </div>
             
             <div class="booking-form-group">
@@ -511,11 +590,66 @@ require_once './models/CarCategory.php';
                 <textarea id="booking-special-requests" class="booking-form-textarea" name="special-requests" rows="3" placeholder="Siège bébé, GPS, etc."></textarea>
             </div>
             
+            <div class="booking-summary">
+                <h4>Résumé de la réservation</h4>
+                <div class="summary-details">
+                    <p><strong>Véhicule:</strong> <?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?></p>
+                    <p><strong>Prix journalier:</strong> <?php echo number_format($car['daily_price'], 0, ',', ' '); ?> €</p>
+                    <p><strong>Durée:</strong> <span id="booking-duration">0</span> jour(s)</p>
+                    <p><strong>Total estimé:</strong> <span id="booking-total">0</span> €</p>
+                </div>
+            </div>
+            
             <button type="submit" class="booking-form-submit">CONFIRMER LA RÉSERVATION</button>
         </form>
     </div>
 </div>
-
+<script>
+// Initialiser la galerie quand la page est complètement chargée
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé, vérification de la galerie...');
+    
+    // Attendre que tous les éléments soient rendus
+    setTimeout(function() {
+        if (document.querySelector('.gallery-page')) {
+            console.log('Page galerie détectée, initialisation...');
+            initGallery();
+        } else {
+            console.log('Page galerie non détectée');
+        }
+    }, 100);
+    
+    // Calculer la durée et le total de la réservation
+    function calculateBooking() {
+        const pickupDateInput = document.getElementById('booking-pickup-date');
+        const returnDateInput = document.getElementById('booking-return-date');
+        
+        if (pickupDateInput && returnDateInput) {
+            const pickupDate = new Date(pickupDateInput.value);
+            const returnDate = new Date(returnDateInput.value);
+            
+            if (pickupDate && returnDate && returnDate > pickupDate) {
+                const duration = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+                const dailyPrice = <?php echo $car['daily_price']; ?>;
+                const total = duration * dailyPrice;
+                
+                document.getElementById('booking-duration').textContent = duration;
+                document.getElementById('booking-total').textContent = total.toLocaleString('fr-FR');
+            } else {
+                document.getElementById('booking-duration').textContent = '0';
+                document.getElementById('booking-total').textContent = '0';
+            }
+        }
+    }
+    
+    // Écouter les changements de dates
+    const pickupDate = document.getElementById('booking-pickup-date');
+    const returnDate = document.getElementById('booking-return-date');
+    
+    if (pickupDate) pickupDate.addEventListener('change', calculateBooking);
+    if (returnDate) returnDate.addEventListener('change', calculateBooking);
+});
+</script>
 <?php elseif ($page == 'A-propos') :?>
 <!-- Section Hero -->
 <section class="hero-about">

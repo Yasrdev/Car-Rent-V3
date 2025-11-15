@@ -14,11 +14,11 @@
 </head>
 <body>
 <!-- Loader -->
-  <div id="loader">
+  <!-- <div id="loader">
     <img src="././public/images/bariz-logo.png" alt="Logo">
     <div class="line"></div>
     <h3>Bienvenue sur mon site</h3>
-  </div>
+  </div> -->
 
 <div id="content">
 <!-- Navbar desktop (visible seulement sur desktop) -->
