@@ -13,6 +13,7 @@ $auth = new AuthController($pdo);
 
 // Vérifier si l'utilisateur est connecté, sinon le rediriger vers auth.php
 $auth->redirectIfNotLoggedIn();
+
 $totalUsers = $userModel->getTotalUsers();
 $allUsers = $userModel->getAllUsers();
 // Récupérer les voitures pour l'affichage
@@ -1011,123 +1012,149 @@ $totalCars = count($allCars);
         </div>
     </div>
 
-    <!-- Modal Modification de voiture -->
-    <div id="editCarModal" class="employee-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-edit"></i> Modifier la voiture</h2>
-                <button class="modal-close" id="closeEditCarModal" type="button"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="editCarServerMessage" class="server-message" style="display:none;margin:10px 20px;padding:10px;border-radius:4px;"></div>
-            <div class="modal-body">
-                <div style="background-color: #e8f4f8; border-left: 4px solid #17a2b8; padding: 10px 15px; margin-bottom: 15px; border-radius: 4px; font-size: 13px; color: #004085;">
-                    <strong>💡 Conseil:</strong> Laissez les champs vides pour conserver les valeurs actuelles. Modifiez uniquement les champs que vous souhaitez changer.
-                </div>
-                <form id="editCarForm" enctype="multipart/form-data" novalidate>
-                    <input type="hidden" id="editCarId" name="car_id">
 
-                    <div class="form-group">
-                        <label for="editCarBrand">Marque <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <select id="editCarBrand" name="brand_id" class="form-control">
+    <!-- Modal Modification de voiture -->
+<div id="editCarModal" class="employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-edit"></i> Modifier la voiture</h2>
+            <button class="modal-close" id="closeEditCarModal" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="editCarServerMessage" class="server-message" style="display:none;margin:10px 20px;padding:10px;border-radius:4px;"></div>
+        <div class="modal-body">
+            <form id="editCarForm" enctype="multipart/form-data" novalidate>
+                <input type="hidden" id="editCarId" name="car_id">
+
+                <div class="form-group">
+                    <label for="editCarBrand">Marque <span style="color: #e74c3c;">*</span></label>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="editCarBrand" name="brand_id" class="form-control" style="flex:1;" required>
                             <option value="">-- Sélectionnez une marque --</option>
                         </select>
-                        <div class="error-message" id="editCarBrandError"></div>
+                        <button type="button" class="btn-secondary" id="quickAddBrandBtnEdit" style="white-space:nowrap;">+ Marque</button>
                     </div>
+                    <div class="error-message" id="editCarBrandError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarModel">Modèle <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <input type="text" id="editCarModel" name="model" class="form-control" placeholder="911">
-                        <div class="error-message" id="editCarModelError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarModel">Modèle <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" id="editCarModel" name="model" class="form-control" placeholder="911" required>
+                    <div class="error-message" id="editCarModelError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarCategory">Catégorie <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <select id="editCarCategory" name="category_id" class="form-control">
-                            <option value="">-- Sélectionnez une catégorie --</option>
-                        </select>
-                        <div class="error-message" id="editCarCategoryError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarCategory">Catégorie <span style="color: #e74c3c;">*</span></label>
+                    <select id="editCarCategory" name="category_id" class="form-control" required>
+                        <option value="">-- Sélectionnez une catégorie --</option>
+                    </select>
+                    <div class="error-message" id="editCarCategoryError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarYear">Année <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <input type="number" id="editCarYear" name="year" class="form-control" placeholder="2023">
-                        <div class="error-message" id="editCarYearError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarYear">Année <span style="color: #e74c3c;">*</span></label>
+                    <input type="number" id="editCarYear" name="year" class="form-control" placeholder="2023" min="2000" max="2030" required>
+                    <div class="error-message" id="editCarYearError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarColor">Couleur <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <input type="text" id="editCarColor" name="color" class="form-control" placeholder="Noir">
-                        <div class="error-message" id="editCarColorError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarColor">Couleur <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" id="editCarColor" name="color" class="form-control" placeholder="Noir" required>
+                    <div class="error-message" id="editCarColorError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarLicensePlate">Plaque <span style="color: #999; font-size: 12px;">(optionnel, doit être unique)</span></label>
-                        <input type="text" id="editCarLicensePlate" name="license_plate" class="form-control" placeholder="61234A56">
-                        <div class="error-message" id="editCarLicensePlateError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarLicensePlate">Plaque d'immatriculation <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" id="editCarLicensePlate" name="license_plate" class="form-control" placeholder="61234A56" required>
+                    <div class="error-message" id="editCarLicensePlateError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarDailyPrice">Prix journalier <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <input type="number" step="0.01" id="editCarDailyPrice" name="daily_price" class="form-control" placeholder="250">
-                        <div class="error-message" id="editCarDailyPriceError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarDailyPrice">Prix journalier (€) <span style="color: #e74c3c;">*</span></label>
+                    <input type="number" step="0.01" id="editCarDailyPrice" name="daily_price" class="form-control" placeholder="250" min="0" required>
+                    <div class="error-message" id="editCarDailyPriceError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarStatus">Statut <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <select id="editCarStatus" name="status" class="form-control">
-                            <option value="disponible">Disponible</option>
-                            <option value="réservé">Réservé</option>
-                            <option value="en maintenance">En maintenance</option>
-                            <option value="indisponible">Indisponible</option>
-                        </select>
-                        <div class="error-message" id="editCarStatusError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarFuelType">Type de carburant <span style="color: #e74c3c;">*</span></label>
+                    <select id="editCarFuelType" name="fuel_type" class="form-control" required>
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="essence">Essence</option>
+                        <option value="diesel">Diesel</option>
+                        <option value="electrique">Électrique</option>
+                        <option value="hybride">Hybride</option>
+                    </select>
+                    <div class="error-message" id="editCarFuelTypeError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarFuelType">Carburant <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <select id="editCarFuelType" name="fuel_type" class="form-control">
-                            <option value="">-- Sélectionnez --</option>
-                            <option value="gasoline">Essence</option>
-                            <option value="diesel">Diesel</option>
-                            <option value="electric">Électrique</option>
-                        </select>
-                        <div class="error-message" id="editCarFuelTypeError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarTransmission">Transmission <span style="color: #e74c3c;">*</span></label>
+                    <select id="editCarTransmission" name="transmission" class="form-control" required>
+                        <option value="">-- Sélectionnez --</option>
+                        <option value="manual">Manuelle</option>
+                        <option value="automatic">Automatique</option>
+                    </select>
+                    <div class="error-message" id="editCarTransmissionError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarTransmission">Transmission <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <select id="editCarTransmission" name="transmission" class="form-control">
-                            <option value="">-- Sélectionnez --</option>
-                            <option value="manual">Manuelle</option>
-                            <option value="automatic">Automatique</option>
-                        </select>
-                        <div class="error-message" id="editCarTransmissionError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarStatus">Statut <span style="color: #e74c3c;">*</span></label>
+                    <select id="editCarStatus" name="status" class="form-control" required>
+                        <option value="disponible">Disponible</option>
+                        <option value="réservé">Réservé</option>
+                        <option value="en maintenance">En maintenance</option>
+                        <option value="indisponible">Indisponible</option>
+                    </select>
+                    <div class="error-message" id="editCarStatusError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editCarDescription">Description <span style="color: #999; font-size: 12px;">(optionnel)</span></label>
-                        <textarea id="editCarDescription" name="description" class="form-control" rows="3"></textarea>
-                        <div class="error-message" id="editCarDescriptionError"></div>
-                    </div>
+                <div class="form-group">
+                    <label for="editCarDescription">Description</label>
+                    <textarea id="editCarDescription" name="description" class="form-control" rows="3" placeholder="Description de la voiture..."></textarea>
+                    <div class="error-message" id="editCarDescriptionError"></div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="editMainImage">Image principale</label>
-                        <div id="editImagePreview" style="margin-bottom: 10px;">
-                            <img id="previewImg" src="" alt="Aperçu" style="max-width: 100%; height: auto; border-radius: 8px; display: none;">
-                        </div>
-                        <input type="file" id="editMainImage" name="main_image" accept="image/*" class="form-control">
-                        <div class="error-message" id="editMainImageError"></div>
-                        <small style="color: #888; font-size: 12px; margin-top: 5px; display: block;">Laisser vide pour conserver l'image actuelle. Si vous modifiez l'image, l'ancienne sera supprimée.</small>
+                <!-- Section Images multiples pour l'édition -->
+                <div class="form-group">
+                    <label for="editCarImages">Images de la voiture <small>(max 5 images au total)</small></label>
+                    
+                    <!-- Aperçu des images existantes -->
+                    <div id="editExistingImages" style="margin-bottom: 15px;">
+                        <p style="color: #888; font-size: 14px; margin-bottom: 10px;">Images actuelles :</p>
+                        <div id="editCurrentImagesPreview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-bottom: 15px;"></div>
                     </div>
+                    
+                    <!-- Zone d'upload pour nouvelles images -->
+                    <div id="editImageUploadArea" style="border: 2px dashed rgb(139, 137, 137); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #888; margin-bottom: 10px;"></i>
+                        <p style="color: #888; margin-bottom: 15px; font-size: 14px;">Glissez-déposez de nouvelles images ou cliquez pour sélectionner</p>
+                        <button type="button" id="editSelectImagesBtn" class="btn-secondary" style="margin-bottom: 10px;">
+                            <i class="fas fa-folder-open"></i> Ajouter des images
+                        </button>
+                        <input type="file" id="editCarImages" name="car_images[]" multiple accept="image/jpeg,image/png,image/webp" style="display: none;">
+                        <small style="color: #888; display: block; font-size: 12px;">Formats acceptés: JPG, PNG, WebP • Max 5MB par image</small>
+                    </div>
+                    
+                    <!-- Aperçu des nouvelles images -->
+                    <div id="editImagePreview" style="display: none; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+                    
+                    <div id="editImageCounter" style="text-align: center; margin-top: 10px; font-size: 12px; color: #888;">
+                        <span id="editCurrentImageCount">0</span>/5 images au total
+                    </div>
+                    
+                    <div class="error-message" id="editCarImagesError"></div>
+                </div>
 
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="cancelEditCarModal">Annuler</button>
-                        <button type="submit" class="btn-primary">Enregistrer les modifications</button>
-                    </div>
-                </form>
-            </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditCarModal">Annuler</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <!-- Modal Suppression voiture -->
     <div id="deleteCarModal" class="employee-modal">

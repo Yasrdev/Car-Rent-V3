@@ -68,6 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (activeSection) {
         activeSection.style.animation = 'fadeIn 0.3s ease';
     }
+
+    // Initialiser les boutons d'édition de voiture
+    initEditCarButtons();
 });
 
 // ========== GESTION DU MODAL D'AJOUT D'EMPLOYÉ ==========
@@ -951,6 +954,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function showServerMessage(elementId, message, type) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.className = 'server-message ' + type;
+            
+            // Masquer automatiquement après 5 secondes pour les erreurs
+            if (type === 'error') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+    }
+
     // === GESTION DES IMAGES MULTIPLES POUR LES VOITURES ===
     function initImageUpload() {
         const imageUploadArea = document.getElementById('imageUploadArea');
@@ -1169,8 +1188,630 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // === GESTION DES IMAGES MULTIPLES POUR L'ÉDITION DE VOITURE ===
+    function initEditImageUpload() {
+        const editImageUploadArea = document.getElementById('editImageUploadArea');
+        const editCarImagesInput = document.getElementById('editCarImages');
+        const editSelectImagesBtn = document.getElementById('editSelectImagesBtn');
+        const editImagePreview = document.getElementById('editImagePreview');
+        const editImageCounter = document.getElementById('editImageCounter');
+        const editCurrentImageCount = document.getElementById('editCurrentImageCount');
+        const editCurrentImagesPreview = document.getElementById('editCurrentImagesPreview');
+
+        if (!editImageUploadArea || !editCarImagesInput) return;
+
+        let existingImages = [];
+        let newUploadedFiles = [];
+        let mainImage = null;
+
+        // Créer un input pour l'image principale si il n'existe pas
+        let editMainImageInput = document.getElementById('editMainImage');
+        if (!editMainImageInput) {
+            const mainImageInput = document.createElement('input');
+            mainImageInput.type = 'file';
+            mainImageInput.id = 'editMainImage';
+            mainImageInput.name = 'main_image';
+            mainImageInput.accept = 'image/jpeg,image/png,image/webp';
+            mainImageInput.style.display = 'none';
+            document.getElementById('editCarForm').appendChild(mainImageInput);
+            editMainImageInput = mainImageInput;
+        }
+
+        // Fonction pour charger l'image principale et les images existantes
+        function loadExistingImages(carId, mainImageUrl) {
+            // Stocker l'image principale
+            mainImage = {
+                id: 'main',
+                image_url: mainImageUrl,
+                is_main: true
+            };
+
+            // Afficher l'image principale
+            displayMainImage();
+
+            // Charger les images supplémentaires
+            fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_car_images&car_id=' + carId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.images) {
+                        existingImages = data.images;
+                        displayExistingImages();
+                        updateEditImageCounter();
+                    }
+                })
+                .catch(error => console.error('Erreur chargement images:', error));
+        }
+
+        function displayMainImage() {
+            if (!mainImage) return;
+
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'preview-image main-image';
+            previewContainer.style.position = 'relative';
+            previewContainer.style.borderRadius = '8px';
+            previewContainer.style.overflow = 'hidden';
+            previewContainer.style.border = '2px solid #2ecc71'; // Bordure verte pour l'image principale
+            previewContainer.style.background = 'rgba(0, 0, 0, 0.6)';
+
+            const img = document.createElement('img');
+            img.src = window.location.origin + '/Luxury-cars/public/' + mainImage.image_url;
+            img.style.width = '100%';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.display = 'block';
+
+            const mainBadge = document.createElement('div');
+            mainBadge.innerHTML = '<i class="fas fa-star"></i> Principale';
+            mainBadge.style.position = 'absolute';
+            mainBadge.style.top = '5px';
+            mainBadge.style.left = '5px';
+            mainBadge.style.background = 'rgba(46, 204, 113, 0.9)';
+            mainBadge.style.color = 'white';
+            mainBadge.style.padding = '2px 6px';
+            mainBadge.style.borderRadius = '4px';
+            mainBadge.style.fontSize = '10px';
+            mainBadge.style.fontWeight = 'bold';
+
+            const changeBtn = document.createElement('button');
+            changeBtn.type = 'button';
+            changeBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            changeBtn.title = 'Changer l\'image principale';
+            changeBtn.style.position = 'absolute';
+            changeBtn.style.top = '5px';
+            changeBtn.style.right = '5px';
+            changeBtn.style.background = 'rgba(52, 152, 219, 0.9)';
+            changeBtn.style.border = 'none';
+            changeBtn.style.borderRadius = '50%';
+            changeBtn.style.width = '24px';
+            changeBtn.style.height = '24px';
+            changeBtn.style.color = 'white';
+            changeBtn.style.cursor = 'pointer';
+            changeBtn.style.display = 'flex';
+            changeBtn.style.alignItems = 'center';
+            changeBtn.style.justifyContent = 'center';
+            changeBtn.style.fontSize = '12px';
+
+            changeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editMainImageInput.click();
+            });
+
+            const imageInfo = document.createElement('div');
+            imageInfo.style.position = 'absolute';
+            imageInfo.style.bottom = '0';
+            imageInfo.style.left = '0';
+            imageInfo.style.right = '0';
+            imageInfo.style.background = 'rgba(0, 0, 0, 0.7)';
+            imageInfo.style.color = 'white';
+            imageInfo.style.padding = '2px 5px';
+            imageInfo.style.fontSize = '10px';
+            imageInfo.style.textOverflow = 'ellipsis';
+            imageInfo.style.overflow = 'hidden';
+            imageInfo.style.whiteSpace = 'nowrap';
+            imageInfo.textContent = 'Image principale';
+
+            previewContainer.appendChild(img);
+            previewContainer.appendChild(mainBadge);
+            previewContainer.appendChild(changeBtn);
+            previewContainer.appendChild(imageInfo);
+            
+            // Ajouter au début du conteneur
+            editCurrentImagesPreview.insertBefore(previewContainer, editCurrentImagesPreview.firstChild);
+        }
+
+        function displayExistingImages() {
+            existingImages.forEach((image, index) => {
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'preview-image additional-image';
+                previewContainer.style.position = 'relative';
+                previewContainer.style.borderRadius = '8px';
+                previewContainer.style.overflow = 'hidden';
+                previewContainer.style.border = '1px solid rgb(139, 137, 137)';
+                previewContainer.style.background = 'rgba(0, 0, 0, 0.6)';
+
+                const img = document.createElement('img');
+                img.src = window.location.origin + '/Luxury-cars/public/' + image.image_url;
+                img.style.width = '100%';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '5px';
+                removeBtn.style.right = '5px';
+                removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.color = 'white';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.fontSize = '12px';
+
+                removeBtn.addEventListener('mouseenter', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 1)';
+                    removeBtn.style.transform = 'scale(1.1)';
+                });
+
+                removeBtn.addEventListener('mouseleave', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                    removeBtn.style.transform = 'scale(1)';
+                });
+
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('Supprimer cette image ?')) {
+                        deleteExistingImage(image.id, previewContainer);
+                    }
+                });
+
+                const imageInfo = document.createElement('div');
+                imageInfo.style.position = 'absolute';
+                imageInfo.style.bottom = '0';
+                imageInfo.style.left = '0';
+                imageInfo.style.right = '0';
+                imageInfo.style.background = 'rgba(0, 0, 0, 0.7)';
+                imageInfo.style.color = 'white';
+                imageInfo.style.padding = '2px 5px';
+                imageInfo.style.fontSize = '10px';
+                imageInfo.style.textOverflow = 'ellipsis';
+                imageInfo.style.overflow = 'hidden';
+                imageInfo.style.whiteSpace = 'nowrap';
+                imageInfo.textContent = 'Image supplémentaire';
+
+                previewContainer.appendChild(img);
+                previewContainer.appendChild(removeBtn);
+                previewContainer.appendChild(imageInfo);
+                editCurrentImagesPreview.appendChild(previewContainer);
+            });
+        }
+
+        // Gestion du changement d'image principale
+        editMainImageInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Validation
+                if (!file.type.startsWith('image/')) {
+                    showServerMessage('editCarServerMessage', 'Le fichier sélectionné n\'est pas une image valide', 'error');
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showServerMessage('editCarServerMessage', 'L\'image est trop volumineuse (max 5MB)', 'error');
+                    return;
+                }
+
+                // Aperçu de la nouvelle image principale
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Mettre à jour l'aperçu de l'image principale
+                    const mainImageContainer = document.querySelector('.main-image');
+                    if (mainImageContainer) {
+                        mainImageContainer.querySelector('img').src = e.target.result;
+                    }
+                    showServerMessage('editCarServerMessage', 'Nouvelle image principale sélectionnée. Enregistrez pour appliquer les modifications.', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Le reste du code pour les images supplémentaires reste inchangé...
+        function handleEditImageSelection(files) {
+            const totalImages = (mainImage ? 1 : 0) + existingImages.length + newUploadedFiles.length;
+            const availableSlots = 5 - totalImages;
+            
+            if (files.length > availableSlots) {
+                showServerMessage('editCarServerMessage', `Vous ne pouvez ajouter que ${availableSlots} image(s) supplémentaire(s)`, 'error');
+                return;
+            }
+
+            for (let i = 0; i < Math.min(files.length, availableSlots); i++) {
+                const file = files[i];
+                
+                // Validation du type de fichier
+                if (!file.type.startsWith('image/')) {
+                    showServerMessage('editCarServerMessage', `Le fichier "${file.name}" n'est pas une image valide`, 'error');
+                    continue;
+                }
+
+                // Validation de la taille (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    showServerMessage('editCarServerMessage', `L'image "${file.name}" est trop volumineuse (max 5MB)`, 'error');
+                    continue;
+                }
+
+                // Vérifier si le fichier n'est pas déjà uploadé
+                const isDuplicate = newUploadedFiles.some(existingFile => 
+                    existingFile.name === file.name && existingFile.size === file.size
+                );
+
+                if (!isDuplicate) {
+                    newUploadedFiles.push(file);
+                    createEditImagePreview(file, newUploadedFiles.length - 1);
+                }
+            }
+
+            updateEditImageCounter();
+            updateEditFileInput();
+        }
+
+        function createEditImagePreview(file, index) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewContainer = document.createElement('div');
+                previewContainer.className = 'preview-image';
+                previewContainer.style.position = 'relative';
+                previewContainer.style.borderRadius = '8px';
+                previewContainer.style.overflow = 'hidden';
+                previewContainer.style.border = '1px solid rgb(139, 137, 137)';
+                previewContainer.style.background = 'rgba(0, 0, 0, 0.6)';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.display = 'block';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '5px';
+                removeBtn.style.right = '5px';
+                removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.color = 'white';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.fontSize = '12px';
+                removeBtn.style.transition = 'all 0.2s ease';
+
+                removeBtn.addEventListener('mouseenter', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 1)';
+                    removeBtn.style.transform = 'scale(1.1)';
+                });
+
+                removeBtn.addEventListener('mouseleave', () => {
+                    removeBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+                    removeBtn.style.transform = 'scale(1)';
+                });
+
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    newUploadedFiles.splice(index, 1);
+                    previewContainer.remove();
+                    updateEditImageCounter();
+                    updateEditFileInput();
+                    recreateEditPreviews();
+                });
+
+                const imageInfo = document.createElement('div');
+                imageInfo.style.position = 'absolute';
+                imageInfo.style.bottom = '0';
+                imageInfo.style.left = '0';
+                imageInfo.style.right = '0';
+                imageInfo.style.background = 'rgba(0, 0, 0, 0.7)';
+                imageInfo.style.color = 'white';
+                imageInfo.style.padding = '2px 5px';
+                imageInfo.style.fontSize = '10px';
+                imageInfo.style.textOverflow = 'ellipsis';
+                imageInfo.style.overflow = 'hidden';
+                imageInfo.style.whiteSpace = 'nowrap';
+                imageInfo.textContent = file.name;
+
+                previewContainer.appendChild(img);
+                previewContainer.appendChild(removeBtn);
+                previewContainer.appendChild(imageInfo);
+                editImagePreview.appendChild(previewContainer);
+                
+                editImagePreview.style.display = 'grid';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function recreateEditPreviews() {
+            editImagePreview.innerHTML = '';
+            newUploadedFiles.forEach((file, index) => {
+                createEditImagePreview(file, index);
+            });
+            updateEditImageCounter();
+        }
+
+        function updateEditImageCounter() {
+            const totalCount = (mainImage ? 1 : 0) + existingImages.length + newUploadedFiles.length;
+            editCurrentImageCount.textContent = totalCount;
+            
+            if (totalCount === 0) {
+                editImagePreview.style.display = 'none';
+                editImageCounter.style.color = '#888';
+            } else if (totalCount === 5) {
+                editImageCounter.style.color = '#2ecc71';
+            } else {
+                editImageCounter.style.color = '#f39c12';
+            }
+        }
+
+        function updateEditFileInput() {
+            const dataTransfer = new DataTransfer();
+            newUploadedFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            editCarImagesInput.files = dataTransfer.files;
+        }
+
+        function deleteExistingImage(imageId, previewElement) {
+            const formData = new FormData();
+            formData.append('action', 'delete_car_image');
+            formData.append('image_id', imageId);
+
+            fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    previewElement.remove();
+                    existingImages = existingImages.filter(img => img.id !== imageId);
+                    updateEditImageCounter();
+                    showServerMessage('editCarServerMessage', 'Image supprimée avec succès', 'success');
+                } else {
+                    showServerMessage('editCarServerMessage', data.message || 'Erreur lors de la suppression', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur suppression image:', error);
+                showServerMessage('editCarServerMessage', 'Erreur lors de la suppression', 'error');
+            });
+        }
+
+        // Réinitialiser quand le modal est fermé
+        document.getElementById('closeEditCarModal')?.addEventListener('click', resetEditImageUpload);
+        document.getElementById('cancelEditCarModal')?.addEventListener('click', resetEditImageUpload);
+
+        function resetEditImageUpload() {
+            editImagePreview.innerHTML = '';
+            editImagePreview.style.display = 'none';
+            editCurrentImagesPreview.innerHTML = '';
+            editCarImagesInput.value = '';
+            editMainImageInput.value = '';
+            existingImages = [];
+            newUploadedFiles = [];
+            mainImage = null;
+            updateEditImageCounter();
+        }
+
+        // Événements pour les images supplémentaires
+        editSelectImagesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            editCarImagesInput.click();
+        });
+
+        editImageUploadArea.addEventListener('click', () => {
+            editCarImagesInput.click();
+        });
+
+        editImageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            editImageUploadArea.style.borderColor = '#2ecc71';
+            editImageUploadArea.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+        });
+
+        editImageUploadArea.addEventListener('dragleave', () => {
+            editImageUploadArea.style.borderColor = 'rgb(139, 137, 137)';
+            editImageUploadArea.style.backgroundColor = 'transparent';
+        });
+
+        editImageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            editImageUploadArea.style.borderColor = 'rgb(139, 137, 137)';
+            editImageUploadArea.style.backgroundColor = 'transparent';
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleEditImageSelection(e.dataTransfer.files);
+            }
+        });
+
+        editCarImagesInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleEditImageSelection(e.target.files);
+            }
+        });
+
+        return {
+            loadExistingImages: function(carId, mainImageUrl) {
+                loadExistingImages(carId, mainImageUrl);
+            },
+            resetEditImageUpload
+        };
+    }
+
     // Initialiser l'upload d'images multiples
     initImageUpload();
+
+    // Initialiser l'upload d'images multiples pour l'édition
+    const editImageManager = initEditImageUpload();
+
+    // === INITIALISATION DES BOUTONS D'ÉDITION DE VOITURE ===
+    function initEditCarButtons() {
+        console.log('Initialisation des boutons d\'édition de voiture...');
+        
+        const editCarBtns = document.querySelectorAll('.edit-car-btn');
+        console.log('Boutons d\'édition trouvés:', editCarBtns.length);
+        
+        editCarBtns.forEach((btn, index) => {
+            console.log(`Configuration du bouton ${index + 1} avec ID:`, btn.getAttribute('data-id'));
+            
+            // Supprimer les écouteurs existants pour éviter les doublons
+            btn.replaceWith(btn.cloneNode(true));
+        });
+        
+        // Réattacher les écouteurs aux nouveaux éléments
+        document.querySelectorAll('.edit-car-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const carId = this.getAttribute('data-id');
+                console.log('Bouton édition voiture cliqué - ID:', carId);
+                
+                if (carId) {
+                    openEditCarModal(carId);
+                } else {
+                    console.error('ID de voiture manquant');
+                }
+            });
+        });
+    }
+
+    // === FONCTION OUVERTURE MODAL ÉDITION VOITURE ===
+    function openEditCarModal(carId) {
+        console.log('Ouverture modal édition voiture ID:', carId);
+        
+        if (!carId) {
+            console.error('ID de voiture invalide');
+            return;
+        }
+        
+        // Fermer tous les modals d'abord
+        closeAllModals();
+        
+        // Afficher le modal d'édition
+        if (editCarModal) {
+            editCarModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Afficher un message de chargement
+            if (editCarServerMsg) {
+                editCarServerMsg.style.display = 'block';
+                editCarServerMsg.textContent = 'Chargement des données...';
+                editCarServerMsg.classList.remove('error', 'success');
+            }
+            
+            // Réinitialiser le formulaire
+            if (editCarForm) editCarForm.reset();
+            if (editImageManager && editImageManager.resetEditImageUpload) {
+                editImageManager.resetEditImageUpload();
+            }
+        } else {
+            console.error('Modal d\'édition non trouvé');
+            return;
+        }
+
+        // Charger les données de la voiture
+        fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_car&car_id=' + carId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Données voiture reçues:', data);
+                
+                if (data.success && data.car) {
+                    const car = data.car;
+                    
+                    // Remplir le formulaire
+                    document.getElementById('editCarId').value = car.id;
+                    document.getElementById('editCarBrand').value = car.brand_id || '';
+                    document.getElementById('editCarModel').value = car.model || '';
+                    document.getElementById('editCarCategory').value = car.category_id || '';
+                    document.getElementById('editCarYear').value = car.year || '';
+                    document.getElementById('editCarColor').value = car.color || '';
+                    document.getElementById('editCarLicensePlate').value = car.license_plate || '';
+                    document.getElementById('editCarDailyPrice').value = car.daily_price || '';
+                    document.getElementById('editCarStatus').value = car.status || 'disponible';
+                    document.getElementById('editCarFuelType').value = car.fuel_type || '';
+                    document.getElementById('editCarTransmission').value = car.transmission || '';
+                    document.getElementById('editCarDescription').value = car.description || '';
+
+                    // Charger les images (principale + supplémentaires)
+                    if (editImageManager && editImageManager.loadExistingImages) {
+                        editImageManager.loadExistingImages(carId, car.main_image_url);
+                    }
+
+                    // Charger les catégories et marques
+                    loadCategoriesForEdit();
+                    loadBrands();
+
+                    // Cacher le message de chargement
+                    if (editCarServerMsg) {
+                        editCarServerMsg.style.display = 'none';
+                    }
+                    
+                    console.log('Formulaire d\'édition rempli avec succès');
+                } else {
+                    throw new Error(data.message || 'Erreur lors du chargement des données');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur chargement voiture:', error);
+                if (editCarServerMsg) {
+                    editCarServerMsg.style.display = 'block';
+                    editCarServerMsg.textContent = 'Erreur: ' + error.message;
+                    editCarServerMsg.classList.add('error');
+                }
+            });
+    }
+
+    // === CHARGEMENT DES CATÉGORIES POUR L'ÉDITION ===
+    function loadCategoriesForEdit() {
+        fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_categories')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('editCarCategory');
+                if (select && data.success) {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">-- Sélectionnez une catégorie --</option>';
+                    data.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        select.appendChild(option);
+                    });
+                    // Maintenir la valeur sélectionnée
+                    select.value = currentValue;
+                }
+            })
+            .catch(error => console.error('Erreur chargement catégories:', error));
+    }
 
     // === MODAL AJOUT VOITURE ===
     if (openCarModalBtn) {
@@ -1200,8 +1841,8 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'carLicensePlate', validator: (val) => val.trim().length > 0, message: 'La plaque est requise' },
             { id: 'carDailyPrice', validator: (val) => val > 0, message: 'Le prix doit être positif' },
             { id: 'carFuelType', validator: (val) => val !== '', message: 'Le type de carburant est requis' },
-            { id: 'carTransmission', validator: (val) => val !== '', message: 'La transmission est requise' },
-            { id: 'carStatus', validator: (val) => val !== '', message: 'Le statut est requis' }
+            { id: 'carTransmission', validator: (val) => val !== '', message: 'La transmission est requis'},
+                        { id: 'carStatus', validator: (val) => val !== '', message: 'Le statut est requis' }
         ];
 
         fields.forEach(field => {
@@ -1669,23 +2310,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeViewCategoriesModalBtn) closeViewCategoriesModalBtn.addEventListener('click', closeAllModals);
     if (closeViewCategoriesBtn) closeViewCategoriesBtn.addEventListener('click', closeAllModals);
 
-    // === FONCTIONS UTILITAIRES ===
-    function showServerMessage(elementId, message, type) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.textContent = message;
-            element.style.display = 'block';
-            element.className = 'server-message ' + type;
-            
-            // Masquer automatiquement après 5 secondes pour les erreurs
-            if (type === 'error') {
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 5000);
-            }
-        }
-    }
-
     function loadCategories() {
         // Charger les catégories pour le select
         fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_categories')
@@ -1735,9 +2359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const categoryId = this.getAttribute('data-id');
                             const categoryName = this.getAttribute('data-name');
                             // Ouvrir le modal de suppression
-                            if (typeof openDeleteCategoryModal === 'function') {
-                                openDeleteCategoryModal(categoryId, categoryName);
-                            }
+                            openDeleteCategoryModal(categoryId, categoryName);
                         });
                     });
                 }
@@ -1889,6 +2511,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Initialiser les boutons immédiatement
+    initEditCarButtons();
+
     // === ÉDITION ET SUPPRESSION DE VOITURE ===
     const closeEditCarModalBtn = document.getElementById('closeEditCarModal');
     const closeDeleteCarModalBtn = document.getElementById('closeDeleteCarModal');
@@ -1902,96 +2527,54 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedCarToEdit = null;
     let selectedCarToDelete = null;
 
-    // Gestionnaire d'édition de voiture
-    document.querySelectorAll('.edit-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const carId = this.getAttribute('data-id');
-            openEditCarModal(carId);
-        });
-    });
-
-    function openEditCarModal(carId) {
-        // Chercher la voiture dans le DOM (data attributes) ou faire un fetch
-        // Pour simplifier, on va faire un fetch pour récupérer tous les détails
-        fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_car&car_id=' + carId)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.car) {
-                    const car = data.car;
-                    // Remplir le formulaire
-                    document.getElementById('editCarId').value = car.id;
-                    document.getElementById('editCarBrand').value = car.brand_id || '';
-                    document.getElementById('editCarModel').value = car.model || '';
-                    document.getElementById('editCarCategory').value = car.category_id || '';
-                    document.getElementById('editCarYear').value = car.year || '';
-                    document.getElementById('editCarColor').value = car.color || '';
-                    document.getElementById('editCarLicensePlate').value = car.license_plate || '';
-                    document.getElementById('editCarDailyPrice').value = car.daily_price || '';
-                    document.getElementById('editCarStatus').value = car.status || 'disponible';
-                    document.getElementById('editCarFuelType').value = car.fuel_type || '';
-                    document.getElementById('editCarTransmission').value = car.transmission || '';
-                    document.getElementById('editCarDescription').value = car.description || '';
-
-                    // Afficher l'image actuelle en aperçu
-                    const previewImg = document.getElementById('previewImg');
-                    if (car.main_image_url) {
-                        previewImg.src = window.location.origin + '/Luxury-cars/public/' + car.main_image_url;
-                        previewImg.style.display = 'block';
-                    } else {
-                        previewImg.style.display = 'none';
-                    }
-
-                    // Charger les catégories et marques
-                    loadCategoriesForEdit();
-                    loadBrands();
-
-                    // Ouvrir le modal
-                    closeAllModals();
-                    if (editCarModal) {
-                        editCarModal.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    }
-                    if (editCarServerMsg) { editCarServerMsg.style.display = 'none'; editCarServerMsg.textContent = ''; }
-                }
-            })
-            .catch(error => console.error('Erreur chargement voiture:', error));
-    }
-
-    function loadCategoriesForEdit() {
-        fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_categories')
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('editCarCategory');
-                if (select && data.success) {
-                    const currentValue = select.value;
-                    select.innerHTML = '<option value="">-- Sélectionnez une catégorie --</option>';
-                    data.categories.forEach(category => {
-                        const option = document.createElement('option');
-                        option.value = category.id;
-                        option.textContent = category.name;
-                        select.appendChild(option);
-                    });
-                    select.value = currentValue;
-                }
-            });
-    }
-
+    // Fermer la modal d'édition de voiture
     function closeEditCarModal() {
         if (editCarModal) {
             editCarModal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
         selectedCarToEdit = null;
-        editCarForm.reset();
+        if (editCarForm) editCarForm.reset();
+        if (editImageManager && editImageManager.resetEditImageUpload) {
+            editImageManager.resetEditImageUpload();
+        }
     }
 
     if (closeEditCarModalBtn) closeEditCarModalBtn.addEventListener('click', closeEditCarModal);
     if (cancelEditCarModalBtn) cancelEditCarModalBtn.addEventListener('click', closeEditCarModal);
 
+    // Validation du formulaire d'édition de voiture
+    function validateEditCarForm() {
+        clearFormErrors('editCarForm');
+        let isValid = true;
+
+        // Validation seulement si le champ est rempli
+        const year = document.getElementById('editCarYear').value;
+        if (year && (year < 2000 || year > 2030)) {
+            setFormError('editCarForm', 'editCarYear', 'L\'année doit être entre 2000 et 2030');
+            isValid = false;
+        } else {
+            setFormSuccess('editCarForm', 'editCarYear');
+        }
+
+        const dailyPrice = document.getElementById('editCarDailyPrice').value;
+        if (dailyPrice && dailyPrice <= 0) {
+            setFormError('editCarForm', 'editCarDailyPrice', 'Le prix doit être positif');
+            isValid = false;
+        } else {
+            setFormSuccess('editCarForm', 'editCarDailyPrice');
+        }
+
+        // Les autres champs ne sont pas obligatoires pour l'édition
+        return isValid;
+    }
+
     // Soumission du formulaire d'édition
     if (editCarForm) {
         editCarForm.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            if (!validateEditCarForm()) return;
 
             const formData = new FormData(this);
             formData.append('action', 'update_car');
@@ -2091,7 +2674,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.car) {
                     const car = data.car;
-                    selectedCarToDelete = { id: car.id, name: (car.brand_id + ' ' + car.model) };
+                    selectedCarToDelete = { id: car.id, name: (car.brand_name + ' ' + car.model) };
                     document.getElementById('deleteCarName').textContent = selectedCarToDelete.name;
                     
                     closeAllModals();
@@ -2208,4 +2791,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Ajouter le bouton "Ajouter marque" dans l'édition
+    document.getElementById('quickAddBrandBtnEdit')?.addEventListener('click', function() {
+        closeAllModals();
+        addBrandModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Réinitialiser les boutons d'édition après les actions
+    function refreshEditCarButtons() {
+        console.log('Rafraîchissement des boutons d\'édition...');
+        setTimeout(() => {
+            initEditCarButtons();
+        }, 500);
+    }
+
+    // Initialisation finale
+    initEditCarButtons();
 });

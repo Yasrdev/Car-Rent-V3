@@ -21,7 +21,7 @@ require_once '../config/db-config.php';
 require_once '../models/User.php';
 
 // Vérifier si l'utilisateur est connecté et a les droits
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'manager') {
     echo json_encode(['success' => false, 'message' => 'Accès non autorisé']);
     exit;
 }

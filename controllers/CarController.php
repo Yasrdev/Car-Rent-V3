@@ -21,10 +21,7 @@ set_error_handler(function($severity, $message, $file, $line) {
 });
 
 // Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Accès non autorisé']);
-    exit;
-}
+
 
 $carModel = new Car($pdo);
 $categoryModel = new CarCategory($pdo);
@@ -422,21 +419,9 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
     global $pdo;
     $errors = [];
     
-    // Get required fields (matching form input names from dashboard.php)
+    // Get required fields
     $carId = $_POST['car_id'] ?? null;
-    $brandId = $_POST['brand_id'] ?? null;
-    $categoryId = $_POST['category_id'] ?? null;
-    $model = $_POST['model'] ?? null;
-    $year = $_POST['year'] ?? null;
-    $color = $_POST['color'] ?? null;
-    $licensePlate = $_POST['license_plate'] ?? null;
-    $dailyPrice = $_POST['daily_price'] ?? null;
-    $status = $_POST['status'] ?? null;
-    $fuelType = $_POST['fuel_type'] ?? null;
-    $transmission = $_POST['transmission'] ?? null;
-    $description = $_POST['description'] ?? null;
     
-    // Validation
     if (empty($carId)) {
         echo json_encode(['success' => false, 'message' => 'ID de voiture manquant']);
         return;
@@ -449,47 +434,44 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
         return;
     }
     
-    // Use current value if field is empty
-    $brandId = !empty($brandId) ? $brandId : $currentCar['brand_id'];
-    $categoryId = !empty($categoryId) ? $categoryId : $currentCar['category_id'];
-    $model = !empty($model) ? $model : $currentCar['model'];
-    $year = !empty($year) ? $year : $currentCar['year'];
-    $color = !empty($color) ? $color : $currentCar['color'];
-    $licensePlate = !empty($licensePlate) ? $licensePlate : $currentCar['license_plate'];
-    $dailyPrice = !empty($dailyPrice) ? $dailyPrice : $currentCar['daily_price'];
-    $status = !empty($status) ? $status : $currentCar['status'];
-    $fuelType = !empty($fuelType) ? $fuelType : $currentCar['fuel_type'];
-    $transmission = !empty($transmission) ? $transmission : $currentCar['transmission'];
-    $description = !empty($description) ? $description : $currentCar['description'];
+    // Récupérer les valeurs des champs (les champs vides gardent les valeurs actuelles)
+    $brandId = !empty($_POST['brand_id']) ? $_POST['brand_id'] : $currentCar['brand_id'];
+    $categoryId = !empty($_POST['category_id']) ? $_POST['category_id'] : $currentCar['category_id'];
+    $model = !empty($_POST['model']) ? trim($_POST['model']) : $currentCar['model'];
+    $year = !empty($_POST['year']) ? $_POST['year'] : $currentCar['year'];
+    $color = !empty($_POST['color']) ? trim($_POST['color']) : $currentCar['color'];
+    $licensePlate = !empty($_POST['license_plate']) ? trim($_POST['license_plate']) : $currentCar['license_plate'];
+    $dailyPrice = !empty($_POST['daily_price']) ? $_POST['daily_price'] : $currentCar['daily_price'];
+    $status = !empty($_POST['status']) ? $_POST['status'] : $currentCar['status'];
+    $fuelType = !empty($_POST['fuel_type']) ? $_POST['fuel_type'] : $currentCar['fuel_type'];
+    $transmission = !empty($_POST['transmission']) ? $_POST['transmission'] : $currentCar['transmission'];
+    $description = isset($_POST['description']) ? trim($_POST['description']) : $currentCar['description'];
     
-    // Validation only for fields that were actually filled (optional fields)
-    // If a field is empty, we already used the current value, so no validation error needed
-    
-    // Only validate fields that have actual values
-    if (!empty($year) && (!is_numeric($year) || $year < 2000 || $year > date('Y') + 1)) {
-        $errors['Year'] = 'L\'année doit être entre 2000 et ' . (date('Y') + 1);
+    // Validation seulement pour les champs modifiés
+    if (!empty($_POST['year']) && (!is_numeric($_POST['year']) || $_POST['year'] < 2000 || $_POST['year'] > date('Y') + 1)) {
+        $errors['year'] = 'L\'année doit être entre 2000 et ' . (date('Y') + 1);
     }
     
-    if (!empty($licensePlate)) {
+    if (!empty($_POST['license_plate'])) {
         // Check if license plate is unique (excluding current car)
-        $existingCar = $carModel->getCarByLicensePlate($licensePlate);
+        $existingCar = $carModel->getCarByLicensePlate($_POST['license_plate']);
         if ($existingCar && $existingCar['id'] != $carId) {
-            $errors['LicensePlate'] = 'Cette plaque d\'immatriculation existe déjà';
+            $errors['license_plate'] = 'Cette plaque d\'immatriculation existe déjà';
         }
     }
     
-    if (!empty($dailyPrice) && (!is_numeric($dailyPrice) || $dailyPrice <= 0)) {
-        $errors['DailyPrice'] = 'Le prix doit être un nombre positif';
+    if (!empty($_POST['daily_price']) && (!is_numeric($_POST['daily_price']) || $_POST['daily_price'] <= 0)) {
+        $errors['daily_price'] = 'Le prix doit être un nombre positif';
     }
     
     // Validation de la catégorie si modifiée
-    if (!empty($categoryId) && $categoryId != $currentCar['category_id'] && !$categoryModel->getCategoryById($categoryId)) {
-        $errors['Category'] = 'Catégorie invalide';
+    if (!empty($_POST['category_id']) && $_POST['category_id'] != $currentCar['category_id'] && !$categoryModel->getCategoryById($_POST['category_id'])) {
+        $errors['category_id'] = 'Catégorie invalide';
     }
     
     // Validation de la marque si modifiée
-    if (!empty($brandId) && $brandId != $currentCar['brand_id'] && !$brandModel->getBrandById($brandId)) {
-        $errors['Brand'] = 'Marque invalide';
+    if (!empty($_POST['brand_id']) && $_POST['brand_id'] != $currentCar['brand_id'] && !$brandModel->getBrandById($_POST['brand_id'])) {
+        $errors['brand_id'] = 'Marque invalide';
     }
     
     if (!empty($errors)) {
@@ -506,11 +488,11 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
         // Validate image
         $validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!in_array($file['type'], $validTypes)) {
-            $errors['MainImage'] = 'Format d\'image invalide. Utilisez JPG, PNG, GIF ou WebP';
+            $errors['main_image'] = 'Format d\'image invalide. Utilisez JPG, PNG, GIF ou WebP';
         }
         
         if ($file['size'] > 5 * 1024 * 1024) { // 5MB max
-            $errors['MainImage'] = 'L\'image ne doit pas dépasser 5MB';
+            $errors['main_image'] = 'L\'image ne doit pas dépasser 5MB';
         }
         
         if (!empty($errors)) {
@@ -525,7 +507,7 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
         }
         
         // Generate unique filename
-        $filename = 'car_' . $carId . '_' . time() . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'car_' . $carId . '_main_' . time() . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
         $uploadPath = $uploadDir . $filename;
         
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
@@ -540,14 +522,14 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
             // Store relative path for database
             $mainImageUrl = 'images/cars/' . $filename;
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur lors du téléchargement de l\'image']);
+            echo json_encode(['success' => false, 'message' => 'Erreur lors du téléchargement de l\'image principale']);
             return;
         }
     }
     
     // Handle additional images upload
     $newAdditionalImages = [];
-    if (isset($_FILES['additional_images']) && is_array($_FILES['additional_images']['name'])) {
+    if (isset($_FILES['car_images']) && is_array($_FILES['car_images']['name'])) {
         $uploadDir = '../public/images/cars/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
@@ -555,21 +537,21 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
         
         $imageErrors = [];
         $currentImageCount = $carImageModel->countImagesByCarId($carId);
-        $availableSlots = 4 - $currentImageCount; // Maximum 4 images supplémentaires (5 total - 1 principale)
+        $availableSlots = 5 - ($currentImageCount + 1); // Maximum 5 images total (1 principale + 4 supplémentaires)
         
-        for ($i = 0; $i < count($_FILES['additional_images']['name']); $i++) {
-            if ($_FILES['additional_images']['error'][$i] === UPLOAD_ERR_OK) {
+        for ($i = 0; $i < count($_FILES['car_images']['name']); $i++) {
+            if ($_FILES['car_images']['error'][$i] === UPLOAD_ERR_OK) {
                 if ($availableSlots <= 0) {
                     $imageErrors[] = 'Maximum 5 images autorisées au total (1 principale + 4 supplémentaires)';
                     break;
                 }
                 
                 $file = [
-                    'name' => $_FILES['additional_images']['name'][$i],
-                    'type' => $_FILES['additional_images']['type'][$i],
-                    'tmp_name' => $_FILES['additional_images']['tmp_name'][$i],
-                    'error' => $_FILES['additional_images']['error'][$i],
-                    'size' => $_FILES['additional_images']['size'][$i]
+                    'name' => $_FILES['car_images']['name'][$i],
+                    'type' => $_FILES['car_images']['type'][$i],
+                    'tmp_name' => $_FILES['car_images']['tmp_name'][$i],
+                    'error' => $_FILES['car_images']['error'][$i],
+                    'size' => $_FILES['car_images']['size'][$i]
                 ];
                 
                 $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -611,7 +593,7 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
                     @unlink($fullPath);
                 }
             }
-            echo json_encode(['success' => false, 'errors' => ['additional_images' => implode(', ', $imageErrors)]]);
+            echo json_encode(['success' => false, 'errors' => ['car_images' => implode(', ', $imageErrors)]]);
             return;
         }
     }
@@ -660,7 +642,7 @@ function updateCar($carModel, $categoryModel, $brandModel, $carImageModel) {
             }
         }
         error_log('Exception updateCar: ' . $e->getMessage());
-        echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour de la voiture']);
+        echo json_encode(['success' => false, 'message' => 'Erreur lors de la mise à jour de la voiture: ' . $e->getMessage()]);
     }
 }
 
