@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialiser les boutons d'édition de voiture
     initEditCarButtons();
+    attachEmployeeEvents();
+    attachCarDeleteEvents();
 });
 
 // ========== GESTION DU MODAL D'AJOUT D'EMPLOYÉ ==========
@@ -251,7 +253,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('role', document.getElementById('role').value);
             formData.append('password', document.getElementById('password').value);
             formData.append('confirm_password', document.getElementById('confirmPassword').value);
-
+            formData.append('action', 'add_user');
+            
             // Désactiver le bouton
             const submitBtn = employeeForm.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -262,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (serverMsg) { serverMsg.style.display = 'none'; serverMsg.textContent = ''; serverMsg.className = 'server-message'; }
 
             // Envoi AJAX
-            const url = window.location.origin + '/Luxury-cars/controllers/Add_User.php';
+            const url = '../controllers/UserController.php';
 
             fetch(url, {
                 method: 'POST',
@@ -305,17 +308,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Afficher les erreurs niveau champ et/ou global
                 if (data.success) {
                     if (serverMsg) {
                         serverMsg.style.display = 'block';
                         serverMsg.textContent = data.message || 'Employé ajouté avec succès.';
                         serverMsg.classList.add('success');
-                    } else {
-                        alert('✓ Employé ajouté avec succès !');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            serverMsg.style.display = 'none';
+                        }, 3000);
                     }
-                    // Fermer le modal après un court délai et recharger
-                    setTimeout(() => { closeModal(); location.reload(); }, 800);
+                    
+                    // Fermer le modal après un court délai et rafraîchir
+                    setTimeout(() => { 
+                        closeModal(); 
+                        refreshEmployeesList();
+                    }, 800);
+                    
                 } else if (data.errors) {
                     // Afficher les erreurs serveur
                     const nonFieldMessages = [];
@@ -453,9 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Envoyer la requête de suppression
             const formData = new FormData();
             formData.append('employee_id', employeeToDelete.id);
-            formData.append('action', 'delete_employee');
+            formData.append('action', 'delete_user');
 
-            fetch(window.location.origin + '/Luxury-cars/controllers/Delete_User.php', {
+            fetch(window.location.origin + '/Luxury-cars/controllers/UserController.php', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
@@ -495,15 +505,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (data.success) {
-                    // Afficher message de succès dans la modal, fermer et recharger
                     if (deleteServerMsg) {
                         deleteServerMsg.style.display = 'block';
                         deleteServerMsg.textContent = data.message || 'Employé supprimé avec succès.';
                         deleteServerMsg.classList.remove('error');
                         deleteServerMsg.classList.add('success');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            deleteServerMsg.style.display = 'none';
+                        }, 3000);
                     }
-                    // Fermer le modal et recharger après court délai
-                    setTimeout(() => { closeDeleteModal(); location.reload(); }, 700);
+                    
+                    // Fermer le modal et rafraîchir la liste après court délai
+                    setTimeout(() => { 
+                        closeDeleteModal(); 
+                        refreshEmployeesList();
+                    }, 700);
+                    
                 } else {
                     if (deleteServerMsg) {
                         deleteServerMsg.style.display = 'block';
@@ -720,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('role', document.getElementById('editRole').value);
             formData.append('password', document.getElementById('editPassword').value);
             formData.append('confirm_password', document.getElementById('editConfirmPassword').value);
-            formData.append('action', 'update_employee');
+            formData.append('action', 'update_user');
 
             // Désactiver le bouton
             const submitBtn = editEmployeeForm.querySelector('button[type="submit"]');
@@ -736,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Envoi AJAX
-            const url = window.location.origin + '/Luxury-cars/controllers/Update_User.php';
+            const url = window.location.origin + '/Luxury-cars/controllers/UserController.php';
 
             fetch(url, {
                 method: 'POST',
@@ -783,14 +802,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         serverMsg.style.display = 'block';
                         serverMsg.textContent = data.message || 'Employé modifié avec succès.';
                         serverMsg.classList.add('success');
-                    } else {
-                        alert('✓ Employé modifié avec succès !');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            serverMsg.style.display = 'none';
+                        }, 3000);
                     }
-                    // Fermer le modal après un court délai et recharger
+                    
+                    // Fermer le modal après un court délai et rafraîchir
                     setTimeout(() => { 
                         closeEditModal(); 
-                        location.reload(); 
+                        refreshEmployeesList();
                     }, 800);
+                    
                 } else if (data.errors) {
                     // Afficher les erreurs serveur
                     const nonFieldMessages = [];
@@ -961,12 +985,14 @@ document.addEventListener('DOMContentLoaded', function() {
             element.style.display = 'block';
             element.className = 'server-message ' + type;
             
-            // Masquer automatiquement après 5 secondes pour les erreurs
-            if (type === 'error') {
-                setTimeout(() => {
+            // Masquer automatiquement après 5 secondes pour les succès et 8 secondes pour les erreurs
+            const timeout = type === 'success' ? 3000 : 8000;
+            setTimeout(() => {
+                if (element.textContent === message) { // Vérifier que le message n'a pas changé
                     element.style.display = 'none';
-                }, 5000);
-            }
+                    element.textContent = '';
+                }
+            }, timeout);
         }
     }
 
@@ -1909,7 +1935,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.success) {
                     showServerMessage('carFormServerMessage', data.message || 'Voiture ajoutée avec succès', 'success');
-                    setTimeout(() => { closeAllModals(); location.reload(); }, 1500);
+                    
+                    setTimeout(() => { 
+                        closeAllModals(); 
+                        refreshCarsList();
+                    }, 1500);
+                    
                 } else if (data.errors) {
                     for (let field in data.errors) {
                         setFormError('addCarForm', 'car' + field.charAt(0).toUpperCase() + field.slice(1), data.errors[field]);
@@ -2013,10 +2044,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.success) {
                     showServerMessage('categoryFormServerMessage', data.message || 'Catégorie ajoutée avec succès', 'success');
+                    
+                    // Masquer le message après 3 secondes
+                    setTimeout(() => {
+                        const serverMsg = document.getElementById('categoryFormServerMessage');
+                        if (serverMsg) serverMsg.style.display = 'none';
+                    }, 3000);
+                    
                     setTimeout(() => { 
                         closeAllModals(); 
                         addCategoryForm.reset();
-                        // Recharger les catégories si besoin
                     }, 1500);
                 } else {
                     showServerMessage('categoryFormServerMessage', data.message || 'Erreur lors de l\'ajout', 'error');
@@ -2073,7 +2110,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (data.success) {
                     showServerMessage('brandFormServerMessage', data.message || 'Marque ajoutée', 'success');
-                    setTimeout(() => { closeAllModals(); addBrandForm.reset(); loadBrands(); }, 1000);
+                    
+                    // Masquer le message après 3 secondes
+                    setTimeout(() => {
+                        const serverMsg = document.getElementById('brandFormServerMessage');
+                        if (serverMsg) serverMsg.style.display = 'none';
+                    }, 3000);
+                    
+                    setTimeout(() => { 
+                        closeAllModals(); 
+                        addBrandForm.reset(); 
+                        loadBrands(); 
+                    }, 1000);
                 } else {
                     showServerMessage('brandFormServerMessage', data.message || 'Erreur lors de l\'ajout', 'error');
                 }
@@ -2263,7 +2311,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         deleteBrandServerMsg.textContent = data.message || 'Marque supprimée avec succès.';
                         deleteBrandServerMsg.classList.remove('error');
                         deleteBrandServerMsg.classList.add('success');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            deleteBrandServerMsg.style.display = 'none';
+                        }, 3000);
                     }
+                    
                     // Recharger les listes et revenir à la vue marques
                     setTimeout(() => {
                         closeDeleteBrandModal();
@@ -2467,7 +2521,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         deleteCategoryServerMsg.textContent = data.message || 'Catégorie supprimée avec succès.';
                         deleteCategoryServerMsg.classList.remove('error');
                         deleteCategoryServerMsg.classList.add('success');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            deleteCategoryServerMsg.style.display = 'none';
+                        }, 3000);
                     }
+                    
                     // Recharger les listes et revenir à la vue catégories
                     setTimeout(() => {
                         closeDeleteCategoryModal();
@@ -2623,11 +2683,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         editCarServerMsg.textContent = data.message || 'Voiture modifiée avec succès.';
                         editCarServerMsg.classList.remove('error');
                         editCarServerMsg.classList.add('success');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            editCarServerMsg.style.display = 'none';
+                        }, 3000);
                     }
+                    
                     setTimeout(() => {
                         closeEditCarModal();
-                        location.reload();
+                        refreshCarsList();
                     }, 1000);
+                    
                 } else if (data.errors) {
                     for (let field in data.errors) {
                         const errorEl = document.getElementById('editCar' + field.charAt(0).toUpperCase() + field.slice(1) + 'Error');
@@ -2748,11 +2815,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         deleteCarServerMsg.textContent = data.message || 'Voiture supprimée avec succès.';
                         deleteCarServerMsg.classList.remove('error');
                         deleteCarServerMsg.classList.add('success');
+                        
+                        // Masquer automatiquement après 3 secondes
+                        setTimeout(() => {
+                            deleteCarServerMsg.style.display = 'none';
+                        }, 3000);
                     }
+                    
                     setTimeout(() => {
                         closeDeleteCarModal();
-                        location.reload();
+                        refreshCarsList();
                     }, 1000);
+                    
                 } else {
                     if (deleteCarServerMsg) {
                         deleteCarServerMsg.style.display = 'block';
@@ -2810,3 +2884,269 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialisation finale
     initEditCarButtons();
 });
+
+// ========== FONCTIONS DE RAFRAÎCHISSEMENT ==========
+
+// Rafraîchir la liste des employés
+function refreshEmployeesList() {
+    console.log('Rafraîchissement de la liste des employés...');
+    
+    fetch(window.location.origin + '/Luxury-cars/controllers/UserController.php?action=get_users')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.users) {
+                updateEmployeesTable(data.users);
+                updateEmployeesStats(data.users.length);
+            }
+        })
+        .catch(error => console.error('Erreur rafraîchissement employés:', error));
+}
+
+// Mettre à jour le tableau des employés
+function updateEmployeesTable(users) {
+    const tbody = document.querySelector('#employees-content table tbody');
+    if (!tbody) return;
+
+    if (users.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-data">
+                    <i class="fas fa-users"></i>
+                    <p>Aucun employé trouvé</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    let html = '';
+    users.forEach(user => {
+        const roleClass = user.role === 'manager' ? 'manager' : 'admin';
+        const date = new Date(user.created_at);
+        const formattedDate = date.toLocaleDateString('fr-FR');
+        
+        html += `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}</td>
+                <td>${user.email}</td>
+                <td>+212 ${user.phone}</td>
+                <td><span class="role-badge ${roleClass}">${user.role}</span></td>
+                <td>${formattedDate}</td>
+                <td>
+                    <button class="btn-action edit-employee-btn" 
+                            data-id="${user.id}"
+                            data-firstname="${user.first_name}"
+                            data-lastname="${user.last_name}"
+                            data-email="${user.email}"
+                            data-phone="${user.phone}"
+                            data-role="${user.role}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete-employee-btn" 
+                            data-id="${user.id}" 
+                            data-name="${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}"
+                            data-email="${user.email}"
+                            data-role="${user.role}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    
+    // Réattacher les événements aux nouveaux boutons
+    attachEmployeeEvents();
+}
+
+// Mettre à jour les statistiques des employés
+function updateEmployeesStats(count) {
+    const statElement = document.querySelector('.stat-card:nth-child(2) .stat-info h3');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
+
+// Rafraîchir la liste des voitures
+function refreshCarsList() {
+    console.log('Rafraîchissement de la liste des voitures...');
+    
+    fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_cars')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.cars) {
+                updateCarsGrid(data.cars);
+                updateCarsStats(data.cars.length);
+            }
+        })
+        .catch(error => console.error('Erreur rafraîchissement voitures:', error));
+}
+
+// Mettre à jour la grille des voitures
+function updateCarsGrid(cars) {
+    const carsGrid = document.querySelector('.cars-grid');
+    if (!carsGrid) return;
+
+    if (cars.length === 0) {
+        carsGrid.innerHTML = `
+            <div class="no-data" style="grid-column: 1 / -1; text-align:center; padding:20px;">
+                <i class="fas fa-car"></i>
+                <p>Aucune voiture trouvée</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    cars.forEach(car => {
+        const imagePath = car.main_image_url ? '../public/' + car.main_image_url : '../public/images/car-placeholder.png';
+        const brand = car.brand_name || car.brand_id || '';
+        const model = car.model || '';
+        const title = `${brand} ${model}`.trim();
+        const year = car.year || '';
+        const category = car.category_name || '';
+        const price = car.daily_price ? Number(car.daily_price).toFixed(2) : '';
+        const status = car.status || 'Disponible';
+        
+        // Déterminer la classe CSS pour le statut
+        let statusClass = 'available';
+        if (status === 'réservé') statusClass = 'reserved';
+        else if (status === 'en maintenance') statusClass = 'maintenance';
+        else if (status === 'indisponible') statusClass = 'indisponible';
+
+        html += `
+            <div class="car-card">
+                <div class="car-image">
+                    <img src="${imagePath}" alt="${title}">
+                    <span class="car-status ${statusClass}">${status}</span>
+                </div>
+                <div class="car-info">
+                    <h3>${title || 'Voiture'}</h3>
+                    <p>${year} • ${category}</p>
+                    <div class="car-price">€${price}/jour</div>
+                </div>
+                <div class="car-actions">
+                    <button class="btn-action edit-car-btn" data-id="${car.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete-car-btn" data-id="${car.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    carsGrid.innerHTML = html;
+    
+    // Réattacher les événements aux nouveaux boutons
+    initEditCarButtons();
+    attachCarDeleteEvents();
+}
+
+// Mettre à jour les statistiques des voitures
+function updateCarsStats(count) {
+    const statElement = document.querySelector('.stat-card:first-child .stat-info h3');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
+
+// Réattacher les événements aux boutons d'employés
+function attachEmployeeEvents() {
+    // Réattacher les événements de modification
+    document.querySelectorAll('.edit-employee-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const employeeData = {
+                id: this.getAttribute('data-id'),
+                first_name: this.getAttribute('data-firstname'),
+                last_name: this.getAttribute('data-lastname'),
+                email: this.getAttribute('data-email'),
+                phone: this.getAttribute('data-phone'),
+                role: this.getAttribute('data-role')
+            };
+            openEditEmployeeModal(employeeData);
+        });
+    });
+
+    // Réattacher les événements de suppression
+    document.querySelectorAll('.delete-employee-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const employeeData = {
+                id: this.getAttribute('data-id'),
+                name: this.getAttribute('data-name'),
+                email: this.getAttribute('data-email'),
+                role: this.getAttribute('data-role')
+            };
+            openDeleteEmployeeModal(employeeData);
+        });
+    });
+}
+
+// Réattacher les événements de suppression des voitures
+function attachCarDeleteEvents() {
+    document.querySelectorAll('.delete-car-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const carId = this.getAttribute('data-id');
+            openDeleteCarModal(carId);
+        });
+    });
+}
+
+// Fonction pour ouvrir la modal d'édition d'employé
+function openEditEmployeeModal(employeeData) {
+    const editModal = document.getElementById('editEmployeeModal');
+    if (!editModal) return;
+
+    // Remplir le formulaire avec les données actuelles
+    document.getElementById('editEmployeeId').value = employeeData.id;
+    document.getElementById('editFirstName').value = employeeData.first_name;
+    document.getElementById('editLastName').value = employeeData.last_name;
+    document.getElementById('editEmail').value = employeeData.email;
+    document.getElementById('editPhone').value = employeeData.phone;
+    document.getElementById('editRole').value = employeeData.role;
+    
+    // Réinitialiser les champs mot de passe
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editConfirmPassword').value = '';
+
+    // Effacer les erreurs
+    const serverMsg = document.getElementById('editFormServerMessage');
+    if (serverMsg) {
+        serverMsg.style.display = 'none';
+        serverMsg.textContent = '';
+        serverMsg.className = 'server-message';
+    }
+
+    // Afficher la modal
+    editModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Fonction pour ouvrir la modal de suppression d'employé
+function openDeleteEmployeeModal(employeeData) {
+    const deleteModal = document.getElementById('deleteEmployeeModal');
+    if (!deleteModal) return;
+
+    // Remplir les informations dans la modal
+    document.getElementById('deleteEmployeeName').textContent = employeeData.name;
+    document.getElementById('deleteEmployeeEmail').textContent = employeeData.email;
+    document.getElementById('deleteEmployeeRole').textContent = employeeData.role;
+
+    // Stocker les données de l'employé à supprimer
+    window.currentEmployeeToDelete = employeeData;
+
+    // Afficher la modal
+    deleteModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Clear server message when opening
+    const deleteServerMsg = document.getElementById('deleteEmployeeServerMessage');
+    if (deleteServerMsg) {
+        deleteServerMsg.style.display = 'none';
+        deleteServerMsg.textContent = '';
+        deleteServerMsg.classList.remove('error', 'success');
+    }
+}

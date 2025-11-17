@@ -16,6 +16,8 @@ $auth->redirectIfNotLoggedIn();
 
 $totalUsers = $userModel->getTotalUsers();
 $allUsers = $userModel->getAllUsers();
+
+
 // Récupérer les voitures pour l'affichage
 $carModel = new Car($pdo);
 $allCars = $carModel->getAllCars();
