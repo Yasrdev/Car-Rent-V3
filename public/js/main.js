@@ -31,15 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
 const navbar = document.querySelector('.navbar');
 const logo = document.getElementById('logo')
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) { // si on a scrollé de plus de 50px
+    if (window.scrollY > 50) {
         navbar.classList.add('active');
         logo.classList.add('active');
     } else {
         navbar.classList.remove('active');
         logo.classList.remove('active');
     }
-
-    console.log(navbar.classList);
 });
 
 //== afficher le menu en Mobile ==//
@@ -77,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     mobileDropdown.addEventListener('click', function() {
         dropdownCard.classList.toggle('show-card');
-        // Réinitialiser l'affichage des icônes quand la card s'ouvre
         if (dropdownCard.classList.contains('show-card')) {
             setTimeout(() => {
                 forceIconsDisplay();
@@ -102,7 +99,7 @@ function forceIconsDisplay() {
             const icon = option.querySelector('i');
             if (icon) {
                 icon.style.display = 'inline-block';
-                icon.style.opacity = '0.3'; // Icônes non sélectionnées en transparence
+                icon.style.opacity = '0.3';
             }
         });
 
@@ -121,9 +118,7 @@ function initDropdown(dropdown) {
     const options = dropdown.querySelectorAll('ul li');
     const checkbox = dropdown.querySelector('input');
 
-    // Vérifier si le dropdown a des options
     if (options.length > 0 && label) {
-        // S'assurer que toutes les icônes sont visibles
         options.forEach(option => {
             const icon = option.querySelector('i');
             if (icon) {
@@ -142,13 +137,9 @@ function initDropdown(dropdown) {
 
         options.forEach(option => {
             option.addEventListener('click', () => {
-                // Mettre à jour le label
                 label.textContent = option.childNodes[0].textContent.trim();
-
-                // Fermer le dropdown
                 checkbox.checked = false;
 
-                // Mettre à jour l'opacité des icônes
                 options.forEach(opt => {
                     const optIcon = opt.querySelector('i');
                     if (optIcon) {
@@ -156,7 +147,6 @@ function initDropdown(dropdown) {
                     }
                 });
 
-                // Icône sélectionnée en pleine opacité
                 const selectedIcon = option.querySelector('i');
                 if (selectedIcon) {
                     selectedIcon.style.opacity = '1';
@@ -169,7 +159,6 @@ function initDropdown(dropdown) {
 // Initialiser tous les dropdowns
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.custom-dropdown').forEach(initDropdown);
-    // Forcer l'affichage initial des icônes
     setTimeout(forceIconsDisplay, 500);
 });
 
@@ -185,14 +174,10 @@ document.addEventListener('click', (event) => {
 
 // car details gallery 
 function initGallery() {
-    console.log('Initialisation de la galerie...');
-
-    // Récupérer les images depuis le HTML
     const thumbSlides = document.querySelectorAll('.gallery-thumb-slide');
     const galleryImages = [];
 
     if (thumbSlides.length === 0) {
-        console.warn('Aucune miniature trouvée dans la galerie');
         return;
     }
 
@@ -214,26 +199,19 @@ function initGallery() {
     const galleryNextBtn = document.getElementById('galleryNextBtn');
 
     if (!galleryMainImage) {
-        console.error('Élément galleryMainImage non trouvé');
         return;
     }
 
-    // Initialiser le compteur
     galleryTotalImagesSpan.textContent = galleryTotalImages;
 
-    // Fonction pour mettre à jour l'image principale
     function updateGalleryMainImage(index) {
         if (index < 0 || index >= galleryTotalImages) {
-            console.warn('Index hors limites:', index);
             return;
         }
 
         galleryCurrentIndex = index;
         const newImageSrc = galleryImages[galleryCurrentIndex].main;
 
-        console.log('Changement d\'image vers:', newImageSrc, 'Index:', galleryCurrentIndex);
-
-        // Animation de fondu
         galleryMainImage.style.opacity = '0';
 
         setTimeout(() => {
@@ -244,19 +222,16 @@ function initGallery() {
             updateGalleryButtons();
             updateActiveThumb();
 
-            // Mettre à jour le swiper
             if (window.galleryThumbnailSwiper) {
                 window.galleryThumbnailSwiper.slideTo(galleryCurrentIndex);
             }
         }, 200);
     }
 
-    // Mettre à jour le compteur
     function updateGalleryCounter() {
         galleryCurrentImageSpan.textContent = galleryCurrentIndex + 1;
     }
 
-    // Mettre à jour l'état des boutons
     function updateGalleryButtons() {
         if (galleryPrevBtn) {
             galleryPrevBtn.classList.toggle('disabled', galleryCurrentIndex === 0);
@@ -266,7 +241,6 @@ function initGallery() {
         }
     }
 
-    // Mettre à jour la miniature active
     function updateActiveThumb() {
         thumbSlides.forEach((slide, index) => {
             if (index === galleryCurrentIndex) {
@@ -277,7 +251,6 @@ function initGallery() {
         });
     }
 
-    // Initialiser Swiper pour les miniatures
     function initSwiper() {
         try {
             window.galleryThumbnailSwiper = new Swiper('.gallery-thumbnail-swiper', {
@@ -312,13 +285,11 @@ function initGallery() {
                     }
                 }
             });
-            console.log('Swiper initialisé avec succès');
         } catch (error) {
-            console.error('Erreur lors de l\'initialisation de Swiper:', error);
+            // Erreur silencieuse pour Swiper
         }
     }
 
-    // Événements pour les boutons de navigation
     if (galleryPrevBtn) {
         galleryPrevBtn.addEventListener('click', function() {
             if (galleryCurrentIndex > 0) {
@@ -335,20 +306,40 @@ function initGallery() {
         });
     }
 
-    // Mettre à jour l'image principale lorsqu'on clique sur une miniature
     thumbSlides.forEach((slide, index) => {
         slide.addEventListener('click', function() {
             updateGalleryMainImage(index);
         });
     });
 
-    // Initialisation
     updateGalleryCounter();
     updateGalleryButtons();
     updateActiveThumb();
     initSwiper();
+}
 
-    console.log('Galerie initialisée avec', galleryTotalImages, 'images');
+// Fonction pour afficher les messages dans le formulaire
+function showBookingMessage(message, type = 'info') {
+    const messageDiv = document.getElementById('booking-messages');
+    const messageContent = document.getElementById('booking-message-content');
+    
+    messageDiv.className = 'booking-messages';
+    switch(type) {
+        case 'success':
+            messageDiv.classList.add('success');
+            break;
+        case 'error':
+            messageDiv.classList.add('error');
+            break;
+        case 'info':
+            messageDiv.classList.add('info');
+            break;
+    }
+    
+    messageContent.innerHTML = message;
+    messageDiv.style.display = 'block';
+    
+    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Gestion du modal de réservation
@@ -358,21 +349,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookingForm = document.getElementById('bookingForm');
     const bookingBtn = document.querySelector('.booking-btn');
 
-    // Ouvrir le modal
     if (bookingBtn) {
         bookingBtn.addEventListener('click', function() {
             bookingModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Empêcher le défilement
+            document.body.style.overflow = 'hidden';
         });
     }
 
-    // Fermer le modal
     bookingModalClose.addEventListener('click', function() {
         bookingModal.classList.remove('active');
-        document.body.style.overflow = 'auto'; // Rétablir le défilement
+        document.body.style.overflow = 'auto';
     });
 
-    // Fermer le modal en cliquant à l'extérieur
     bookingModal.addEventListener('click', function(e) {
         if (e.target === bookingModal) {
             bookingModal.classList.remove('active');
@@ -380,39 +368,91 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Gestion de la soumission du formulaire
+    // Gestion de la soumission du formulaire de réservation
     bookingForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Validation simple
+        const submitBtn = bookingForm.querySelector('.booking-form-submit');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Traitement en cours...';
+        submitBtn.disabled = true;
+
+        const messageDiv = document.getElementById('booking-messages');
+        messageDiv.style.display = 'none';
+
         const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
         const returnDate = new Date(document.getElementById('booking-return-date').value);
 
         if (returnDate <= pickupDate) {
-            alert('La date de restitution doit être postérieure à la date de prise en charge.');
+            showBookingMessage('La date de restitution doit être postérieure à la date de prise en charge.', 'error');
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
             return;
         }
 
-        // Simulation de réservation réussie
-        alert('Votre réservation a été soumise avec succès! Nous vous contacterons bientôt.');
+        const formData = new FormData(bookingForm);
+        const reservationData = {
+            first_name: formData.get('first-name'),
+            last_name: formData.get('last-name'),
+            phone: formData.get('Telephone'),
+            email: formData.get('email'),
+            car_id: formData.get('car_id'),
+            start_date: formData.get('pickup-date'),
+            end_date: formData.get('return-date'),
+            start_time: formData.get('pickup-time'),
+            end_time: formData.get('return-time'),
+            special_requests: formData.get('special-requests')
+        };
 
-        // Fermer le modal
-        bookingModal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-
-        // Réinitialiser le formulaire
-        bookingForm.reset();
+        fetch('./controllers/ReservationController.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'create_reservation',
+                data: reservationData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showBookingMessage(`
+                    <div class="booking-success">
+                        <i class="fas fa-check-circle"></i>
+                        <h4>Réservation confirmée !</h4>
+                        <p>${data.message}</p>
+                        <p><strong>Numéro de réservation:</strong> #${data.reservation_id}</p>
+                        <p>Nous vous contacterons dans les plus brefs délais.</p>
+                    </div>
+                `, 'success');
+                
+                bookingForm.reset();
+                document.getElementById('booking-duration').textContent = '0';
+                document.getElementById('booking-total').textContent = '0';
+                
+                setTimeout(() => {
+                    bookingModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    messageDiv.style.display = 'none';
+                }, 5000);
+                
+            } else {
+                showBookingMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showBookingMessage('Une erreur est survenue lors de la réservation. Veuillez réessayer.', 'error');
+        })
+        .finally(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
     });
-
-    // Définir la date minimale comme aujourd'hui
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('booking-pickup-date').min = today;
-    document.getElementById('booking-return-date').min = today;
 });
 
 // SYSTÈME DE FILTRAGE COMPLET
 document.addEventListener('DOMContentLoaded', function() {
-    // Éléments DOM
     const carsContainer = document.getElementById('cars-container');
     const categoryButtons = document.querySelectorAll('#category-buttons .filter-btn');
     const statusButtons = document.querySelectorAll('#status-buttons .status-btn');
@@ -422,14 +462,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileResultCount = document.getElementById('mobile-result-count');
     const loadingModal = document.getElementById('loading-modal');
 
-    // Filtres actuels
     let currentFilters = {
         category: 'all',
         brand: 'all',
         status: 'all'
     };
 
-    // Fonction pour filtrer les voitures
     function filterCars() {
         const carCards = document.querySelectorAll('.car-card');
         let visibleCount = 0;
@@ -451,50 +489,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Mettre à jour le compteur
         resultCount.textContent = visibleCount;
         mobileResultCount.textContent = visibleCount + ' Résultats';
 
-        // Afficher un message si aucun résultat
         showNoResultsMessage(visibleCount);
     }
 
-    // Fonction pour afficher un message si aucun résultat
-    // function showNoResultsMessage(visibleCount) {
-    //     let noResultsMessage = document.getElementById('no-results-message');
+    function showNoResultsMessage(visibleCount) {
+        let noResultsMessage = document.getElementById('no-results-message');
 
-    //     if (visibleCount === 0) {
-    //         if (!noResultsMessage) {
-    //             noResultsMessage = document.createElement('div');
-    //             noResultsMessage.id = 'no-results-message';
-    //             noResultsMessage.className = 'no-results-message';
-    //             noResultsMessage.innerHTML = `
-    //                 <i class="fas fa-search"></i>
-    //                 <h3>Aucune voiture trouvée</h3>
-    //                 <p>Aucun véhicule ne correspond à vos critères de recherche.</p>
-    //                 <button id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
-    //             `;
-    //             carsContainer.appendChild(noResultsMessage);
+        if (visibleCount === 0) {
+            if (!noResultsMessage) {
+                noResultsMessage = document.createElement('div');
+                noResultsMessage.id = 'no-results-message';
+                noResultsMessage.className = 'no-results-message';
+                noResultsMessage.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>Aucune voiture trouvée</h3>
+                    <p>Aucun véhicule ne correspond à vos critères de recherche.</p>
+                    <button id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
+                `;
+                carsContainer.appendChild(noResultsMessage);
 
-    //             // Gestion du bouton de réinitialisation
-    //             document.getElementById('reset-filters-btn').addEventListener('click', resetAllFilters);
-    //         }
-    //         noResultsMessage.style.display = 'block';
-    //     } else if (noResultsMessage) {
-    //         noResultsMessage.style.display = 'none';
-    //     }
-    // }
+                document.getElementById('reset-filters-btn').addEventListener('click', resetAllFilters);
+            }
+            noResultsMessage.style.display = 'block';
+        } else if (noResultsMessage) {
+            noResultsMessage.style.display = 'none';
+        }
+    }
 
-    // Fonction pour réinitialiser tous les filtres
     function resetAllFilters() {
-        // Réinitialiser les filtres
         currentFilters = {
             category: 'all',
             brand: 'all',
             status: 'all'
         };
 
-        // Réinitialiser les boutons de catégorie
         categoryButtons.forEach(btn => {
             btn.classList.remove('active');
             if (btn.getAttribute('data-category') === 'all') {
@@ -502,7 +533,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Réinitialiser les boutons de statut
         statusButtons.forEach(btn => {
             btn.classList.remove('active');
             if (btn.getAttribute('data-status') === 'all') {
@@ -510,16 +540,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Réinitialiser les dropdowns
         resetDropdowns();
-
-        // Re-filtrer
         filterCars();
     }
 
-    // Fonction pour réinitialiser les dropdowns
     function resetDropdowns() {
-        // Réinitialiser le dropdown des marques
         const brandFirstOption = document.querySelector('#brand-filter li[data-brand="all"]');
         if (brandFirstOption) {
             brandFilterItems.forEach(li => li.classList.remove('selected'));
@@ -530,7 +555,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Réinitialiser le dropdown des catégories
         const categoryFirstOption = document.querySelector('#category-filter li[data-category="all"]');
         if (categoryFirstOption) {
             categoryFilterItems.forEach(li => li.classList.remove('selected'));
@@ -542,12 +566,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Gestion des boutons de catégorie
     categoryButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Retirer la classe active de tous les boutons de catégorie
             categoryButtons.forEach(btn => btn.classList.remove('active'));
-            // Ajouter la classe active au bouton cliqué
             this.classList.add('active');
 
             currentFilters.category = this.getAttribute('data-category');
@@ -555,12 +576,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Gestion des boutons de statut
     statusButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Retirer la classe active de tous les boutons de statut
             statusButtons.forEach(btn => btn.classList.remove('active'));
-            // Ajouter la classe active au bouton cliqué
             this.classList.add('active');
 
             currentFilters.status = this.getAttribute('data-status');
@@ -568,43 +586,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Gestion du filtre des marques
     brandFilterItems.forEach(item => {
         item.addEventListener('click', function() {
             const brand = this.getAttribute('data-brand');
 
-            // Retirer la sélection de tous les éléments
             brandFilterItems.forEach(li => li.classList.remove('selected'));
-            // Ajouter la sélection à l'élément cliqué
             this.classList.add('selected');
 
             currentFilters.brand = brand;
             filterCars();
 
-            // Fermer le dropdown
             document.getElementById('dropdown-toggle-brand').checked = false;
         });
     });
 
-    // Gestion du filtre des catégories (dropdown)
     categoryFilterItems.forEach(item => {
         item.addEventListener('click', function() {
             const category = this.getAttribute('data-category');
 
-            // Retirer la sélection de tous les éléments
             categoryFilterItems.forEach(li => li.classList.remove('selected'));
-            // Ajouter la sélection à l'élément cliqué
             this.classList.add('selected');
 
             currentFilters.category = category;
             filterCars();
 
-            // Fermer le dropdown
             document.getElementById('dropdown-toggle-category').checked = false;
         });
     });
 
-    // Gestion des boutons "Découvrir" - Page Voitures
     document.addEventListener('click', function(e) {
         if (e.target.closest('.view-details-btn') && !e.target.closest('.view-details-btn').classList.contains('disabled')) {
             const carId = e.target.closest('.view-details-btn').getAttribute('data-car-id');
@@ -612,7 +621,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Gestion des boutons "Découvrir" - Page d'accueil
     document.addEventListener('click', function(e) {
         if (e.target.closest('.view-details-btn-home') && !e.target.closest('.view-details-btn-home').classList.contains('disabled')) {
             const carId = e.target.closest('.view-details-btn-home').getAttribute('data-car-id');
@@ -620,7 +628,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fonction pour charger les voitures via AJAX (optionnel)
     function loadCarsAjax(filters = {}) {
         loadingModal.style.display = 'flex';
 
@@ -644,12 +651,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 updateCarsDisplay(data.cars);
-            } else {
-                console.error('Erreur:', data.message);
             }
         })
         .catch(error => {
-            console.error('Erreur:', error);
+            // Erreur silencieuse
         })
         .finally(() => {
             loadingModal.style.display = 'none';
@@ -657,30 +662,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateCarsDisplay(cars) {
-        // Implémentez la mise à jour de l'affichage avec les nouvelles données
-        // Cette fonction serait utilisée si vous voulez recharger les données depuis le serveur
-        console.log('Mise à jour des voitures:', cars);
+        // Fonction pour mettre à jour l'affichage des voitures
     }
 
-    // Initialiser le filtrage au chargement
     filterCars();
 });
 
 // Initialiser la galerie quand la page est complètement chargée
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM chargé, vérification de la galerie...');
-
-    // Attendre que tous les éléments soient rendus
     setTimeout(function() {
         if (document.querySelector('.gallery-page')) {
-            console.log('Page galerie détectée, initialisation...');
             initGallery();
-        } else {
-            console.log('Page galerie non détectée');
         }
     }, 100);
 
-    // Calculer la durée et le total de la réservation
     function calculateBooking() {
         const pickupDateInput = document.getElementById('booking-pickup-date');
         const returnDateInput = document.getElementById('booking-return-date');
@@ -704,7 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Écouter les changements de dates
     const pickupDate = document.getElementById('booking-pickup-date');
     const returnDate = document.getElementById('booking-return-date');
 

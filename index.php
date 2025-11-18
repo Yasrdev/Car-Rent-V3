@@ -537,6 +537,10 @@ if ($car['status'] === 'réservé') {
             <i class="fas fa-times"></i>
         </button>
         <h2 class="booking-modal-title">RÉSERVER CETTE VOITURE</h2>
+        <!-- Zone des messages -->
+        <div id="booking-messages" class="booking-messages" style="display: none;">
+            <div id="booking-message-content" class="booking-message-content"></div>
+        </div>
         <form id="bookingForm">
             <input type="hidden" name="car_id" value="<?php echo $car_id; ?>">
             <input type="hidden" name="car_model" value="<?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>">
