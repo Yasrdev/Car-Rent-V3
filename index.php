@@ -1,12 +1,12 @@
 <?php 
 include('./views/header.php');
 
-$page = isset($_GET['page']) ? $_GET['page'] : 'home';
+$page = isset($_GET['page']) ? $_GET['page'] : '';
 
 ?>
 
 
-<?php if ($page == 'home') : ?>
+<?php if ($page == '') : ?>
     <?php
 require_once './config/db-config.php';
 require_once './models/Car.php';
@@ -40,7 +40,7 @@ require_once './models/CarCategory.php';
         <h1>Machines<br>Extraordinaire</h1>
        </div>
         <div class="btn-group">
-            <a href="cars.html#car-card-container" class="btn btn-primary" anim="sheen">EXPLORER<i class="fa-solid fa-arrow-right"></i></a>
+            <a href="index.php?page=Voitures" class="btn btn-primary" anim="sheen">EXPLORER<i class="fa-solid fa-arrow-right"></i></a>
             <a href="about.html#Section-header-about" class="btn btn-secondary" anim="sheen">EN SAVOIR PLUS<i class="fa-solid fa-arrow-right"></i></a>
         </div>
     </div>
@@ -247,15 +247,27 @@ require_once './models/CarCategory.php';
       <div class="collection">
           <h2>Notre collection</h2>
       </div>
-      <div class="filter-options" id="category-buttons">
-          <button class="filter-btn active" data-category="all">Tous</button>
-          <?php foreach ($categories as $category): ?>
-          <button class="filter-btn" data-category="<?php echo $category['id']; ?>">
-              <?php echo htmlspecialchars($category['name']); ?>
-          </button>
-          <?php endforeach; ?>
-      </div>
+    <div class="filter-options" id="status-buttons">
+        <button class="filter-btn status-btn active" data-status="all">Tous</button>
+        <button class="filter-btn status-btn" data-status="disponible">Disponible</button>
+        <button class="filter-btn status-btn" data-status="réservé">Réservé</button>
+        <button class="filter-btn status-btn" data-status="en maintenance">En maintenance</button>
+        <button class="filter-btn status-btn" data-status="indisponible">Indisponible</button>
+    </div>
   </section>
+
+    <!-- <section class="filter-menu-btn">
+    <div class="collection">
+        <h2>Notre collection</h2>
+    </div>
+    <div class="filter-options" id="status-buttons">
+        <button class="filter-btn status-btn active" data-status="all">Tous</button>
+        <button class="filter-btn status-btn" data-status="disponible">Disponible</button>
+        <button class="filter-btn status-btn" data-status="réservé">Réservé</button>
+        <button class="filter-btn status-btn" data-status="en maintenance">En maintenance</button>
+        <button class="filter-btn status-btn" data-status="indisponible">Indisponible</button>
+    </div>
+    </section> -->
 
   <section class="car-card-container" id="cars-container">
       <?php if (isset($error)): ?>

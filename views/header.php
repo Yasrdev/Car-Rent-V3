@@ -30,18 +30,18 @@
     <i class="fas fa-bars"></i>
   </button>
   <ul class="menu" id="menu">
-    <li><a href="index.php?page=home">Accueil</a></li>
+    <li><a href="index.php">Accueil</a></li>
     <li><a href="index.php?page=Voitures">Voitures</a></li>
     <li><a href="index.php?page=A-propos">À propos</a></li>
-    <li><a href="index.php?page=home#Contact" id="goToContact">Contact</a></li>
+    <li><a href="index.php#Contact" id="goToContact">Contact</a></li>
   </ul>
 </nav>
 <div class="fullscreen-menu" id="fullscreenMenu">
   <ul>
-    <li><a href="index.html">Accueil</a></li>
-    <li><a href="cars.html">Voitures</a></li>
-    <li><a href="about.html">À propos</a></li>
-    <li><a href="#Contact">Contact</a></li>
+    <li><a href="index.php?page=home">Accueil</a></li>
+    <li><a href="index.php?page=Voitures">Voitures</a></li>
+    <li><a href="index.php?page=A-propos">À propos</a></li>
+    <li><a href="index.php?page=home#Contact">Contact</a></li>
   </ul>
   <div class="info-nav">
     <i class="fa-brands fa-square-instagram"></i>

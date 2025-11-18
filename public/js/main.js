@@ -1,48 +1,46 @@
 // == SWIPER EVENT == //
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize Swiper
     const swiper = new Swiper('.swiper', {
-      slidesPerView: 1,
-      spaceBetween: 30,
-      loop: true,
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      breakpoints: {
-        640: {
-          slidesPerView: 1,
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
         },
-        768: {
-          slidesPerView: 2,
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
         },
-        1024: {
-          slidesPerView: 3,
+        breakpoints: {
+            640: {
+                slidesPerView: 1,
+            },
+            768: {
+                slidesPerView: 2,
+            },
+            1024: {
+                slidesPerView: 3,
+            },
         },
-      },
     });
-    
-  });
+});
 
-  //== Effet du bordure pour le menu ==//
-  const navbar = document.querySelector('.navbar');
-  const logo = document.getElementById('logo')
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) { // si on a scrollé de plus de 50px
+//== Effet du bordure pour le menu ==//
+const navbar = document.querySelector('.navbar');
+const logo = document.getElementById('logo')
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) { // si on a scrollé de plus de 50px
         navbar.classList.add('active');
         logo.classList.add('active');
-      } else {
+    } else {
         navbar.classList.remove('active');
         logo.classList.remove('active');
-      }
+    }
 
     console.log(navbar.classList);
-    });
-
+});
 
 //== afficher le menu en Mobile ==//
 const burger = document.getElementById('burger');
@@ -50,35 +48,33 @@ const fullscreenMenu = document.getElementById('fullscreenMenu');
 
 burger.addEventListener('click', () => {
     fullscreenMenu.classList.toggle('active');
-   if (fullscreenMenu.classList.contains('active')) {
-    burger.innerHTML = '<i class="fas fa-times"></i>';
-  } else {
-    burger.innerHTML = '<i class="fas fa-bars"></i>';
-  }
+    if (fullscreenMenu.classList.contains('active')) {
+        burger.innerHTML = '<i class="fas fa-times"></i>';
+    } else {
+        burger.innerHTML = '<i class="fas fa-bars"></i>';
+    }
 });
 
-
 //== Loader au démarrage de la page ==//
- const loader = document.getElementById("loader");
-    const content = document.getElementById("content");
+const loader = document.getElementById("loader");
+const content = document.getElementById("content");
 
-    // Masquer le loader après quelques secondes
+// Masquer le loader après quelques secondes
+setTimeout(() => {
+    loader.style.opacity = "0";
+    loader.style.transition = "opacity 1s ease";
     setTimeout(() => {
-      loader.style.opacity = "0";
-      loader.style.transition = "opacity 1s ease";
-      setTimeout(() => {
         loader.style.display = "none";
         content.style.display = "block";
         document.body.style.overflow = "auto";
-      }, 1000);
-    }, 3500);
-
+    }, 1000);
+}, 3500);
 
 // Gestion de l'affichage de la card
 document.addEventListener('DOMContentLoaded', function() {
     const mobileDropdown = document.querySelector('.custom-dropdown-mobile');
     const dropdownCard = document.querySelector('.custom-dropdown-card');
-    
+
     mobileDropdown.addEventListener('click', function() {
         dropdownCard.classList.toggle('show-card');
         // Réinitialiser l'affichage des icônes quand la card s'ouvre
@@ -88,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
     });
-    
+
     // Fermer la card en cliquant à l'extérieur
     document.addEventListener('click', function(event) {
         if (!mobileDropdown.contains(event.target) && !dropdownCard.contains(event.target)) {
@@ -109,7 +105,7 @@ function forceIconsDisplay() {
                 icon.style.opacity = '0.3'; // Icônes non sélectionnées en transparence
             }
         });
-        
+
         // Première option en pleine opacité
         const firstOption = options[0];
         const firstIcon = firstOption.querySelector('i');
@@ -159,7 +155,7 @@ function initDropdown(dropdown) {
                         optIcon.style.opacity = '0.3';
                     }
                 });
-                
+
                 // Icône sélectionnée en pleine opacité
                 const selectedIcon = option.querySelector('i');
                 if (selectedIcon) {
@@ -187,63 +183,59 @@ document.addEventListener('click', (event) => {
     });
 });
 
-
-
-// car details gellery 
-// Remplacer la fonction initGallery complète par :
+// car details gallery 
 function initGallery() {
     console.log('Initialisation de la galerie...');
-    
+
     // Récupérer les images depuis le HTML
     const thumbSlides = document.querySelectorAll('.gallery-thumb-slide');
     const galleryImages = [];
-    
+
     if (thumbSlides.length === 0) {
         console.warn('Aucune miniature trouvée dans la galerie');
         return;
     }
-    
+
     thumbSlides.forEach((slide, index) => {
         const imageUrl = slide.getAttribute('data-image');
-        console.log('Image trouvée:', imageUrl, 'Index:', index);
         galleryImages.push({
             main: imageUrl,
             thumb: imageUrl
         });
     });
-    
+
     let galleryCurrentIndex = 0;
     const galleryTotalImages = galleryImages.length;
-    
+
     const galleryMainImage = document.getElementById('galleryMainImage');
     const galleryCurrentImageSpan = document.getElementById('galleryCurrentImage');
     const galleryTotalImagesSpan = document.getElementById('galleryTotalImages');
     const galleryPrevBtn = document.getElementById('galleryPrevBtn');
     const galleryNextBtn = document.getElementById('galleryNextBtn');
-    
+
     if (!galleryMainImage) {
         console.error('Élément galleryMainImage non trouvé');
         return;
     }
-    
+
     // Initialiser le compteur
     galleryTotalImagesSpan.textContent = galleryTotalImages;
-    
+
     // Fonction pour mettre à jour l'image principale
     function updateGalleryMainImage(index) {
         if (index < 0 || index >= galleryTotalImages) {
             console.warn('Index hors limites:', index);
             return;
         }
-        
+
         galleryCurrentIndex = index;
         const newImageSrc = galleryImages[galleryCurrentIndex].main;
-        
+
         console.log('Changement d\'image vers:', newImageSrc, 'Index:', galleryCurrentIndex);
-        
+
         // Animation de fondu
         galleryMainImage.style.opacity = '0';
-        
+
         setTimeout(() => {
             galleryMainImage.src = newImageSrc;
             galleryMainImage.alt = 'Vue ' + (galleryCurrentIndex + 1) + ' de la voiture';
@@ -251,19 +243,19 @@ function initGallery() {
             updateGalleryCounter();
             updateGalleryButtons();
             updateActiveThumb();
-            
+
             // Mettre à jour le swiper
             if (window.galleryThumbnailSwiper) {
                 window.galleryThumbnailSwiper.slideTo(galleryCurrentIndex);
             }
         }, 200);
     }
-    
+
     // Mettre à jour le compteur
     function updateGalleryCounter() {
         galleryCurrentImageSpan.textContent = galleryCurrentIndex + 1;
     }
-    
+
     // Mettre à jour l'état des boutons
     function updateGalleryButtons() {
         if (galleryPrevBtn) {
@@ -273,7 +265,7 @@ function initGallery() {
             galleryNextBtn.classList.toggle('disabled', galleryCurrentIndex === galleryTotalImages - 1);
         }
     }
-    
+
     // Mettre à jour la miniature active
     function updateActiveThumb() {
         thumbSlides.forEach((slide, index) => {
@@ -284,7 +276,7 @@ function initGallery() {
             }
         });
     }
-    
+
     // Initialiser Swiper pour les miniatures
     function initSwiper() {
         try {
@@ -325,7 +317,7 @@ function initGallery() {
             console.error('Erreur lors de l\'initialisation de Swiper:', error);
         }
     }
-    
+
     // Événements pour les boutons de navigation
     if (galleryPrevBtn) {
         galleryPrevBtn.addEventListener('click', function() {
@@ -334,7 +326,7 @@ function initGallery() {
             }
         });
     }
-    
+
     if (galleryNextBtn) {
         galleryNextBtn.addEventListener('click', function() {
             if (galleryCurrentIndex < galleryTotalImages - 1) {
@@ -342,180 +334,277 @@ function initGallery() {
             }
         });
     }
-    
+
     // Mettre à jour l'image principale lorsqu'on clique sur une miniature
     thumbSlides.forEach((slide, index) => {
         slide.addEventListener('click', function() {
             updateGalleryMainImage(index);
         });
     });
-    
+
     // Initialisation
     updateGalleryCounter();
     updateGalleryButtons();
     updateActiveThumb();
     initSwiper();
-    
+
     console.log('Galerie initialisée avec', galleryTotalImages, 'images');
 }
 
- // Gestion du modal de réservation
-    document.addEventListener('DOMContentLoaded', function() {
-        const bookingModal = document.getElementById('bookingModal');
-        const bookingModalClose = document.getElementById('bookingModalClose');
-        const bookingForm = document.getElementById('bookingForm');
-        const bookingBtn = document.querySelector('.booking-btn');
-        
-        // Ouvrir le modal
-        if (bookingBtn) {
-            bookingBtn.addEventListener('click', function() {
-                bookingModal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Empêcher le défilement
-            });
-        }
-        
-        // Fermer le modal
-        bookingModalClose.addEventListener('click', function() {
-            bookingModal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Rétablir le défilement
+// Gestion du modal de réservation
+document.addEventListener('DOMContentLoaded', function() {
+    const bookingModal = document.getElementById('bookingModal');
+    const bookingModalClose = document.getElementById('bookingModalClose');
+    const bookingForm = document.getElementById('bookingForm');
+    const bookingBtn = document.querySelector('.booking-btn');
+
+    // Ouvrir le modal
+    if (bookingBtn) {
+        bookingBtn.addEventListener('click', function() {
+            bookingModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Empêcher le défilement
         });
-        
-        // Fermer le modal en cliquant à l'extérieur
-        bookingModal.addEventListener('click', function(e) {
-            if (e.target === bookingModal) {
-                bookingModal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        });
-        
-        // Gestion de la soumission du formulaire
-        bookingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Validation simple
-            const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
-            const returnDate = new Date(document.getElementById('booking-return-date').value);
-            
-            if (returnDate <= pickupDate) {
-                alert('La date de restitution doit être postérieure à la date de prise en charge.');
-                return;
-            }
-            
-            // Simulation de réservation réussie
-            alert('Votre réservation a été soumise avec succès! Nous vous contacterons bientôt.');
-            
-            // Fermer le modal
-            bookingModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            // Réinitialiser le formulaire
-            bookingForm.reset();
-        });
-        
-        // Définir la date minimale comme aujourd'hui
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('booking-pickup-date').min = today;
-        document.getElementById('booking-return-date').min = today;
+    }
+
+    // Fermer le modal
+    bookingModalClose.addEventListener('click', function() {
+        bookingModal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Rétablir le défilement
     });
 
+    // Fermer le modal en cliquant à l'extérieur
+    bookingModal.addEventListener('click', function(e) {
+        if (e.target === bookingModal) {
+            bookingModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    });
 
-    
+    // Gestion de la soumission du formulaire
+    bookingForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
+        // Validation simple
+        const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
+        const returnDate = new Date(document.getElementById('booking-return-date').value);
 
+        if (returnDate <= pickupDate) {
+            alert('La date de restitution doit être postérieure à la date de prise en charge.');
+            return;
+        }
 
+        // Simulation de réservation réussie
+        alert('Votre réservation a été soumise avec succès! Nous vous contacterons bientôt.');
 
+        // Fermer le modal
+        bookingModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+
+        // Réinitialiser le formulaire
+        bookingForm.reset();
+    });
+
+    // Définir la date minimale comme aujourd'hui
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('booking-pickup-date').min = today;
+    document.getElementById('booking-return-date').min = today;
+});
+
+// SYSTÈME DE FILTRAGE COMPLET
 document.addEventListener('DOMContentLoaded', function() {
     // Éléments DOM
     const carsContainer = document.getElementById('cars-container');
-    const categoryButtons = document.querySelectorAll('.filter-btn');
+    const categoryButtons = document.querySelectorAll('#category-buttons .filter-btn');
+    const statusButtons = document.querySelectorAll('#status-buttons .status-btn');
     const brandFilterItems = document.querySelectorAll('#brand-filter li');
     const categoryFilterItems = document.querySelectorAll('#category-filter li');
     const resultCount = document.getElementById('result-count');
     const mobileResultCount = document.getElementById('mobile-result-count');
     const loadingModal = document.getElementById('loading-modal');
-    
+
     // Filtres actuels
     let currentFilters = {
         category: 'all',
-        brand: 'all'
+        brand: 'all',
+        status: 'all'
     };
-    
+
     // Fonction pour filtrer les voitures
     function filterCars() {
         const carCards = document.querySelectorAll('.car-card');
         let visibleCount = 0;
-        
+
         carCards.forEach(card => {
             const cardCategory = card.getAttribute('data-category');
             const cardBrand = card.getAttribute('data-brand');
             const cardStatus = card.getAttribute('data-status');
-            
+
             const categoryMatch = currentFilters.category === 'all' || cardCategory === currentFilters.category;
             const brandMatch = currentFilters.brand === 'all' || cardBrand === currentFilters.brand;
-            
-            if (categoryMatch && brandMatch) {
+            const statusMatch = currentFilters.status === 'all' || cardStatus === currentFilters.status;
+
+            if (categoryMatch && brandMatch && statusMatch) {
                 card.style.display = 'block';
                 visibleCount++;
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Mettre à jour le compteur
         resultCount.textContent = visibleCount;
         mobileResultCount.textContent = visibleCount + ' Résultats';
+
+        // Afficher un message si aucun résultat
+        showNoResultsMessage(visibleCount);
     }
-    
+
+    // Fonction pour afficher un message si aucun résultat
+    // function showNoResultsMessage(visibleCount) {
+    //     let noResultsMessage = document.getElementById('no-results-message');
+
+    //     if (visibleCount === 0) {
+    //         if (!noResultsMessage) {
+    //             noResultsMessage = document.createElement('div');
+    //             noResultsMessage.id = 'no-results-message';
+    //             noResultsMessage.className = 'no-results-message';
+    //             noResultsMessage.innerHTML = `
+    //                 <i class="fas fa-search"></i>
+    //                 <h3>Aucune voiture trouvée</h3>
+    //                 <p>Aucun véhicule ne correspond à vos critères de recherche.</p>
+    //                 <button id="reset-filters-btn" class="reset-filters-btn">Réinitialiser les filtres</button>
+    //             `;
+    //             carsContainer.appendChild(noResultsMessage);
+
+    //             // Gestion du bouton de réinitialisation
+    //             document.getElementById('reset-filters-btn').addEventListener('click', resetAllFilters);
+    //         }
+    //         noResultsMessage.style.display = 'block';
+    //     } else if (noResultsMessage) {
+    //         noResultsMessage.style.display = 'none';
+    //     }
+    // }
+
+    // Fonction pour réinitialiser tous les filtres
+    function resetAllFilters() {
+        // Réinitialiser les filtres
+        currentFilters = {
+            category: 'all',
+            brand: 'all',
+            status: 'all'
+        };
+
+        // Réinitialiser les boutons de catégorie
+        categoryButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-category') === 'all') {
+                btn.classList.add('active');
+            }
+        });
+
+        // Réinitialiser les boutons de statut
+        statusButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-status') === 'all') {
+                btn.classList.add('active');
+            }
+        });
+
+        // Réinitialiser les dropdowns
+        resetDropdowns();
+
+        // Re-filtrer
+        filterCars();
+    }
+
+    // Fonction pour réinitialiser les dropdowns
+    function resetDropdowns() {
+        // Réinitialiser le dropdown des marques
+        const brandFirstOption = document.querySelector('#brand-filter li[data-brand="all"]');
+        if (brandFirstOption) {
+            brandFilterItems.forEach(li => li.classList.remove('selected'));
+            brandFirstOption.classList.add('selected');
+            const brandLabel = document.querySelector('.custom-dropdown label[for="dropdown-toggle-brand"]');
+            if (brandLabel) {
+                brandLabel.textContent = brandFirstOption.childNodes[0].textContent.trim();
+            }
+        }
+
+        // Réinitialiser le dropdown des catégories
+        const categoryFirstOption = document.querySelector('#category-filter li[data-category="all"]');
+        if (categoryFirstOption) {
+            categoryFilterItems.forEach(li => li.classList.remove('selected'));
+            categoryFirstOption.classList.add('selected');
+            const categoryLabel = document.querySelector('.custom-dropdown-2 label[for="dropdown-toggle-category"]');
+            if (categoryLabel) {
+                categoryLabel.textContent = categoryFirstOption.childNodes[0].textContent.trim();
+            }
+        }
+    }
+
     // Gestion des boutons de catégorie
     categoryButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Retirer la classe active de tous les boutons
+            // Retirer la classe active de tous les boutons de catégorie
             categoryButtons.forEach(btn => btn.classList.remove('active'));
             // Ajouter la classe active au bouton cliqué
             this.classList.add('active');
-            
+
             currentFilters.category = this.getAttribute('data-category');
             filterCars();
         });
     });
-    
+
+    // Gestion des boutons de statut
+    statusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Retirer la classe active de tous les boutons de statut
+            statusButtons.forEach(btn => btn.classList.remove('active'));
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+
+            currentFilters.status = this.getAttribute('data-status');
+            filterCars();
+        });
+    });
+
     // Gestion du filtre des marques
     brandFilterItems.forEach(item => {
         item.addEventListener('click', function() {
             const brand = this.getAttribute('data-brand');
-            
+
             // Retirer la sélection de tous les éléments
             brandFilterItems.forEach(li => li.classList.remove('selected'));
             // Ajouter la sélection à l'élément cliqué
             this.classList.add('selected');
-            
+
             currentFilters.brand = brand;
             filterCars();
-            
+
             // Fermer le dropdown
             document.getElementById('dropdown-toggle-brand').checked = false;
         });
     });
-    
+
     // Gestion du filtre des catégories (dropdown)
     categoryFilterItems.forEach(item => {
         item.addEventListener('click', function() {
             const category = this.getAttribute('data-category');
-            
+
             // Retirer la sélection de tous les éléments
             categoryFilterItems.forEach(li => li.classList.remove('selected'));
             // Ajouter la sélection à l'élément cliqué
             this.classList.add('selected');
-            
+
             currentFilters.category = category;
             filterCars();
-            
+
             // Fermer le dropdown
             document.getElementById('dropdown-toggle-category').checked = false;
         });
     });
-    
-    // Gestion des boutons "Découvrir"
+
+    // Gestion des boutons "Découvrir" - Page Voitures
     document.addEventListener('click', function(e) {
         if (e.target.closest('.view-details-btn') && !e.target.closest('.view-details-btn').classList.contains('disabled')) {
             const carId = e.target.closest('.view-details-btn').getAttribute('data-car-id');
@@ -523,17 +612,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-        document.addEventListener('click', function(e) {
+    // Gestion des boutons "Découvrir" - Page d'accueil
+    document.addEventListener('click', function(e) {
         if (e.target.closest('.view-details-btn-home') && !e.target.closest('.view-details-btn-home').classList.contains('disabled')) {
             const carId = e.target.closest('.view-details-btn-home').getAttribute('data-car-id');
             window.location.href = 'index.php?page=Voitures-Detailles&car_id=' + carId;
         }
     });
-    
+
     // Fonction pour charger les voitures via AJAX (optionnel)
     function loadCarsAjax(filters = {}) {
         loadingModal.style.display = 'flex';
-        
+
         const formData = new FormData();
         formData.append('action', 'get_filtered_cars');
         if (filters.category && filters.category !== 'all') {
@@ -542,7 +632,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filters.brand && filters.brand !== 'all') {
             formData.append('brand_id', filters.brand);
         }
-        
+        if (filters.status && filters.status !== 'all') {
+            formData.append('status', filters.status);
+        }
+
         fetch('./controllers/CarController.php', {
             method: 'POST',
             body: formData
@@ -562,10 +655,59 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingModal.style.display = 'none';
         });
     }
-    
+
     function updateCarsDisplay(cars) {
         // Implémentez la mise à jour de l'affichage avec les nouvelles données
         // Cette fonction serait utilisée si vous voulez recharger les données depuis le serveur
+        console.log('Mise à jour des voitures:', cars);
     }
+
+    // Initialiser le filtrage au chargement
+    filterCars();
 });
 
+// Initialiser la galerie quand la page est complètement chargée
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé, vérification de la galerie...');
+
+    // Attendre que tous les éléments soient rendus
+    setTimeout(function() {
+        if (document.querySelector('.gallery-page')) {
+            console.log('Page galerie détectée, initialisation...');
+            initGallery();
+        } else {
+            console.log('Page galerie non détectée');
+        }
+    }, 100);
+
+    // Calculer la durée et le total de la réservation
+    function calculateBooking() {
+        const pickupDateInput = document.getElementById('booking-pickup-date');
+        const returnDateInput = document.getElementById('booking-return-date');
+
+        if (pickupDateInput && returnDateInput) {
+            const pickupDate = new Date(pickupDateInput.value);
+            const returnDate = new Date(returnDateInput.value);
+
+            if (pickupDate && returnDate && returnDate > pickupDate) {
+                const duration = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
+                const dailyPrice = document.querySelector('input[name="daily_price"]') ? 
+                    parseFloat(document.querySelector('input[name="daily_price"]').value) : 0;
+                const total = duration * dailyPrice;
+
+                document.getElementById('booking-duration').textContent = duration;
+                document.getElementById('booking-total').textContent = total.toLocaleString('fr-FR');
+            } else {
+                document.getElementById('booking-duration').textContent = '0';
+                document.getElementById('booking-total').textContent = '0';
+            }
+        }
+    }
+
+    // Écouter les changements de dates
+    const pickupDate = document.getElementById('booking-pickup-date');
+    const returnDate = document.getElementById('booking-return-date');
+
+    if (pickupDate) pickupDate.addEventListener('change', calculateBooking);
+    if (returnDate) returnDate.addEventListener('change', calculateBooking);
+});
