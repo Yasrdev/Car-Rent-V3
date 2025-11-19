@@ -501,6 +501,124 @@ body {
     border: 1px solid #f1c40f;
 }
 
+.status-badge.active {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid #3498db;
+}
+
+.status-badge.completed {
+    background: rgba(52, 73, 94, 0.2);
+    color: #95a5a6;
+    border: 1px solid #95a5a6;
+}
+
+.status-badge.cancelled {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+.reservation-summary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.reservation-summary p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.readonly-field {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: #f5f5f5;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f5f5f5;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #cccccc;
+    min-width: 60px;
+    text-align: center;
+}
+
+.section-filters {
+    display: flex;
+    justify-content: flex-end;
+    margin: 15px 0;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    padding: 8px 16px;
+    min-width: 260px;
+}
+
+.search-bar i {
+    color: #f5f5f5;
+    font-size: 14px;
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: #f5f5f5;
+    width: 100%;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-bar input::placeholder {
+    color: rgba(245, 245, 245, 0.6);
+}
+
 /* Grille de voitures */
 .cars-grid {
     display: grid;

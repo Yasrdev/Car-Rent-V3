@@ -1,4 +1,211 @@
-// Gestion de la navigation
+const paginationInstances = {};
+
+// ========== CORRECTION PAGINATION ET RECHERCHE ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser la pagination immédiatement
+    initDashboardPagination();
+    
+    // Réinitialiser la pagination quand on change de section
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            setTimeout(() => {
+                initDashboardPagination();
+            }, 100);
+        });
+    });
+});
+
+// Fonction d'initialisation de la pagination
+function initDashboardPagination() {
+    console.log('Initialisation de la pagination...');
+    
+    const paginationConfigs = [
+        {
+            name: 'employees',
+            itemSelector: '#employees-content tbody tr.employee-row',
+            itemsPerPage: 5
+        },
+        {
+            name: 'cars',
+            itemSelector: '#cars-content .cars-grid .car-card',
+            itemsPerPage: 8
+        },
+        {
+            name: 'reservations',
+            itemSelector: '#reservationsTableBody tr.reservation-row',
+            itemsPerPage: 10
+        }
+    ];
+
+    paginationConfigs.forEach(config => setupPagination(config));
+
+    // Gestion de la recherche des voitures
+    const carSearchInput = document.getElementById('carSearchInput');
+    if (carSearchInput) {
+        carSearchInput.addEventListener('input', function() {
+            const value = this.value.trim().toLowerCase();
+            filterPagination('cars', item => {
+                const license = (item.dataset.license || '').toLowerCase();
+                const brand = (item.dataset.brandName || '').toLowerCase();
+                return license.includes(value) || brand.includes(value);
+            });
+        });
+    }
+
+    // Gestion de la recherche des réservations
+    const reservationSearchInput = document.getElementById('reservationSearchInput');
+    if (reservationSearchInput) {
+        reservationSearchInput.addEventListener('input', function() {
+            const value = this.value.trim().toLowerCase();
+            filterPagination('reservations', item => {
+                const id = (item.dataset.reservationId || '').toLowerCase();
+                const phone = (item.dataset.clientPhone || '').toLowerCase();
+                const license = (item.dataset.carLicense || '').toLowerCase();
+                return id.includes(value) || phone.includes(value) || license.includes(value);
+            });
+        });
+    }
+}
+
+function setupPagination({ name, itemSelector, itemsPerPage }) {
+    console.log(`Configuration pagination pour: ${name}`);
+    
+    const container = document.querySelector(`#${name}-content`);
+    if (!container) {
+        console.log(`Conteneur non trouvé pour: ${name}`);
+        return;
+    }
+
+    const items = Array.from(container.querySelectorAll(itemSelector));
+    const controls = container.querySelector(`[data-pagination="${name}"]`);
+    
+    console.log(`${name}: ${items.length} éléments trouvés`);
+
+    if (!controls || items.length === 0) {
+        if (controls) controls.style.display = 'none';
+        return;
+    }
+
+    controls.style.display = 'flex';
+
+    const infoEl = controls.querySelector(`[data-pagination-info="${name}"]`);
+    const prevBtn = controls.querySelector(`[data-pagination-prev="${name}"]`);
+    const nextBtn = controls.querySelector(`[data-pagination-next="${name}"]`);
+    
+    const state = {
+        name,
+        items,
+        itemsPerPage,
+        currentPage: 1,
+        activeItems: items.slice(),
+        infoEl,
+        prevBtn,
+        nextBtn
+    };
+
+    function renderPage(page) {
+        const totalActive = state.activeItems.length;
+        const totalPages = totalActive > 0 ? Math.ceil(totalActive / state.itemsPerPage) : 1;
+        state.currentPage = Math.max(1, Math.min(page, totalPages));
+
+        // Masquer tous les éléments
+        state.items.forEach(item => item.style.display = 'none');
+
+        if (totalActive === 0) {
+            if (state.infoEl) state.infoEl.textContent = '0/0';
+            if (state.prevBtn) state.prevBtn.disabled = true;
+            if (state.nextBtn) state.nextBtn.disabled = true;
+            return;
+        }
+
+        // Afficher les éléments de la page courante
+        const start = (state.currentPage - 1) * state.itemsPerPage;
+        const end = start + state.itemsPerPage;
+        const pageItems = state.activeItems.slice(start, end);
+        
+        pageItems.forEach(item => {
+            item.style.display = '';
+            // Animation d'apparition
+            item.style.animation = 'fadeIn 0.3s ease';
+        });
+
+        // Mettre à jour les contrôles
+        if (state.infoEl) {
+            state.infoEl.textContent = `${state.currentPage}/${totalPages}`;
+        }
+        if (state.prevBtn) state.prevBtn.disabled = state.currentPage === 1;
+        if (state.nextBtn) state.nextBtn.disabled = state.currentPage === totalPages;
+        
+        console.log(`${name}: Page ${state.currentPage}/${totalPages} (${pageItems.length} éléments)`);
+    }
+
+    function applyFilter(predicate) {
+        if (typeof predicate === 'function') {
+            state.activeItems = state.items.filter(predicate);
+        } else {
+            state.activeItems = state.items.slice();
+        }
+        renderPage(1);
+    }
+
+    // Événements des boutons
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (state.currentPage > 1) {
+                renderPage(state.currentPage - 1);
+            }
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(state.activeItems.length / state.itemsPerPage);
+            if (state.currentPage < totalPages) {
+                renderPage(state.currentPage + 1);
+            }
+        });
+    }
+
+    // Stocker l'instance
+    paginationInstances[name] = { 
+        render: renderPage, 
+        filter: applyFilter, 
+        state,
+        refresh: function() {
+            // Recharger les éléments
+            const container = document.querySelector(`#${name}-content`);
+            if (container) {
+                const newItems = Array.from(container.querySelectorAll(itemSelector));
+                state.items = newItems;
+                state.activeItems = newItems.slice();
+                renderPage(1);
+            }
+        }
+    };
+    
+    // Initialiser
+    renderPage(1);
+}
+
+function filterPagination(name, predicate) {
+    const instance = paginationInstances[name];
+    if (!instance) {
+        console.log(`Instance de pagination non trouvée: ${name}`);
+        return;
+    }
+    instance.filter(predicate);
+}
+
+// Rafraîchir la pagination après les opérations
+function refreshPagination(name) {
+    const instance = paginationInstances[name];
+    if (instance && instance.refresh) {
+        instance.refresh();
+    }
+}
+
+// ========== GESTION DE LA NAVIGATION ==========
 document.addEventListener('DOMContentLoaded', function() {
     const navItems = document.querySelectorAll('.nav-item');
     const contentSections = document.querySelectorAll('.content-section');
@@ -34,6 +241,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.innerWidth <= 1024) {
                 sidebar.classList.remove('active');
             }
+
+            // Réinitialiser la pagination pour la nouvelle section
+            setTimeout(() => {
+                initDashboardPagination();
+            }, 100);
         });
     });
 
@@ -877,6 +1089,278 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ========== FONCTIONS DE RAFRAÎCHISSEMENT ==========
+
+// Rafraîchir la liste des employés
+function refreshEmployeesList() {
+    console.log('Rafraîchissement de la liste des employés...');
+    
+    fetch(window.location.origin + '/Luxury-cars/controllers/UserController.php?action=get_users')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.users) {
+                updateEmployeesTable(data.users);
+                updateEmployeesStats(data.users.length);
+                // Rafraîchir la pagination
+                setTimeout(() => refreshPagination('employees'), 100);
+            }
+        })
+        .catch(error => console.error('Erreur rafraîchissement employés:', error));
+}
+
+// Mettre à jour le tableau des employés
+function updateEmployeesTable(users) {
+    const tbody = document.querySelector('#employees-content table tbody');
+    if (!tbody) return;
+
+    if (users.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-data">
+                    <i class="fas fa-users"></i>
+                    <p>Aucun employé trouvé</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    let html = '';
+    users.forEach(user => {
+        const roleClass = user.role === 'manager' ? 'manager' : 'admin';
+        const date = new Date(user.created_at);
+        const formattedDate = date.toLocaleDateString('fr-FR');
+        
+        html += `
+            <tr class="employee-row">
+                <td>${user.id}</td>
+                <td>${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}</td>
+                <td>${user.email}</td>
+                <td>+212 ${user.phone}</td>
+                <td><span class="role-badge ${roleClass}">${user.role}</span></td>
+                <td>${formattedDate}</td>
+                <td>
+                    <button class="btn-action edit-employee-btn" 
+                            data-id="${user.id}"
+                            data-firstname="${user.first_name}"
+                            data-lastname="${user.last_name}"
+                            data-email="${user.email}"
+                            data-phone="${user.phone}"
+                            data-role="${user.role}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete-employee-btn" 
+                            data-id="${user.id}" 
+                            data-name="${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}"
+                            data-email="${user.email}"
+                            data-role="${user.role}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    
+    // Réattacher les événements aux nouveaux boutons
+    attachEmployeeEvents();
+}
+
+// Mettre à jour les statistiques des employés
+function updateEmployeesStats(count) {
+    const statElement = document.querySelector('.stat-card:nth-child(2) .stat-info h3');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
+
+// Rafraîchir la liste des voitures
+function refreshCarsList() {
+    console.log('Rafraîchissement de la liste des voitures...');
+    
+    fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_cars')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.cars) {
+                updateCarsGrid(data.cars);
+                updateCarsStats(data.cars.length);
+                // Rafraîchir la pagination
+                setTimeout(() => refreshPagination('cars'), 100);
+            }
+        })
+        .catch(error => console.error('Erreur rafraîchissement voitures:', error));
+}
+
+// Mettre à jour la grille des voitures
+function updateCarsGrid(cars) {
+    const carsGrid = document.querySelector('#cars-content .cars-grid');
+    if (!carsGrid) return;
+
+    if (cars.length === 0) {
+        carsGrid.innerHTML = `
+            <div class="no-data" style="grid-column: 1 / -1; text-align:center; padding:20px;">
+                <i class="fas fa-car"></i>
+                <p>Aucune voiture trouvée</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    cars.forEach(car => {
+        const imagePath = car.main_image_url ? '../public/' + car.main_image_url : '../public/images/car-placeholder.png';
+        const brand = car.brand_name || car.brand_id || '';
+        const model = car.model || '';
+        const title = `${brand} ${model}`.trim();
+        const year = car.year || '';
+        const category = car.category_name || '';
+        const price = car.daily_price ? Number(car.daily_price).toFixed(2) : '';
+        const status = car.status || 'Disponible';
+        
+        // Déterminer la classe CSS pour le statut
+        let statusClass = 'available';
+        if (status === 'réservé') statusClass = 'reserved';
+        else if (status === 'en maintenance') statusClass = 'maintenance';
+        else if (status === 'indisponible') statusClass = 'indisponible';
+
+        html += `
+            <div class="car-card"
+                 data-license="${(car.license_plate || '').toLowerCase()}"
+                 data-brand-name="${(brand || '').toLowerCase()}">
+                <div class="car-image">
+                    <img src="${imagePath}" alt="${title}">
+                    <span class="car-status ${statusClass}">${status}</span>
+                </div>
+                <div class="car-info">
+                    <h3>${title || 'Voiture'}</h3>
+                    <p>${year} • ${category}</p>
+                    <div class="car-price">€${price}/jour</div>
+                </div>
+                <div class="car-actions">
+                    <button class="btn-action edit-car-btn" data-id="${car.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete-car-btn" data-id="${car.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    carsGrid.innerHTML = html;
+    
+    // Réattacher les événements aux nouveaux boutons
+    initEditCarButtons();
+    attachCarDeleteEvents();
+}
+
+// Mettre à jour les statistiques des voitures
+function updateCarsStats(count) {
+    const statElement = document.querySelector('.stat-card:first-child .stat-info h3');
+    if (statElement) {
+        statElement.textContent = count;
+    }
+}
+
+// Réattacher les événements aux boutons d'employés
+function attachEmployeeEvents() {
+    // Réattacher les événements de modification
+    document.querySelectorAll('.edit-employee-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const employeeData = {
+                id: this.getAttribute('data-id'),
+                first_name: this.getAttribute('data-firstname'),
+                last_name: this.getAttribute('data-lastname'),
+                email: this.getAttribute('data-email'),
+                phone: this.getAttribute('data-phone'),
+                role: this.getAttribute('data-role')
+            };
+            openEditEmployeeModal(employeeData);
+        });
+    });
+
+    // Réattacher les événements de suppression
+    document.querySelectorAll('.delete-employee-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const employeeData = {
+                id: this.getAttribute('data-id'),
+                name: this.getAttribute('data-name'),
+                email: this.getAttribute('data-email'),
+                role: this.getAttribute('data-role')
+            };
+            openDeleteEmployeeModal(employeeData);
+        });
+    });
+}
+
+// Réattacher les événements de suppression des voitures
+function attachCarDeleteEvents() {
+    document.querySelectorAll('.delete-car-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const carId = this.getAttribute('data-id');
+            openDeleteCarModal(carId);
+        });
+    });
+}
+
+// Fonction pour ouvrir la modal d'édition d'employé
+function openEditEmployeeModal(employeeData) {
+    const editModal = document.getElementById('editEmployeeModal');
+    if (!editModal) return;
+
+    // Remplir le formulaire avec les données actuelles
+    document.getElementById('editEmployeeId').value = employeeData.id;
+    document.getElementById('editFirstName').value = employeeData.first_name;
+    document.getElementById('editLastName').value = employeeData.last_name;
+    document.getElementById('editEmail').value = employeeData.email;
+    document.getElementById('editPhone').value = employeeData.phone;
+    document.getElementById('editRole').value = employeeData.role;
+    
+    // Réinitialiser les champs mot de passe
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editConfirmPassword').value = '';
+
+    // Effacer les erreurs
+    const serverMsg = document.getElementById('editFormServerMessage');
+    if (serverMsg) {
+        serverMsg.style.display = 'none';
+        serverMsg.textContent = '';
+        serverMsg.className = 'server-message';
+    }
+
+    // Afficher la modal
+    editModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Fonction pour ouvrir la modal de suppression d'employé
+function openDeleteEmployeeModal(employeeData) {
+    const deleteModal = document.getElementById('deleteEmployeeModal');
+    if (!deleteModal) return;
+
+    // Remplir les informations dans la modal
+    document.getElementById('deleteEmployeeName').textContent = employeeData.name;
+    document.getElementById('deleteEmployeeEmail').textContent = employeeData.email;
+    document.getElementById('deleteEmployeeRole').textContent = employeeData.role;
+
+    // Stocker les données de l'employé à supprimer
+    window.currentEmployeeToDelete = employeeData;
+
+    // Afficher la modal
+    deleteModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Clear server message when opening
+    const deleteServerMsg = document.getElementById('deleteEmployeeServerMessage');
+    if (deleteServerMsg) {
+        deleteServerMsg.style.display = 'none';
+        deleteServerMsg.textContent = '';
+        deleteServerMsg.classList.remove('error', 'success');
+    }
+}
 
 // ========== GESTION DES VOITURES ET CATÉGORIES ==========
 document.addEventListener('DOMContentLoaded', function() {
@@ -1868,7 +2352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'carDailyPrice', validator: (val) => val > 0, message: 'Le prix doit être positif' },
             { id: 'carFuelType', validator: (val) => val !== '', message: 'Le type de carburant est requis' },
             { id: 'carTransmission', validator: (val) => val !== '', message: 'La transmission est requis'},
-                        { id: 'carStatus', validator: (val) => val !== '', message: 'Le statut est requis' }
+            { id: 'carStatus', validator: (val) => val !== '', message: 'Le statut est requis' }
         ];
 
         fields.forEach(field => {
@@ -2885,271 +3369,357 @@ document.addEventListener('DOMContentLoaded', function() {
     initEditCarButtons();
 });
 
-// ========== FONCTIONS DE RAFRAÎCHISSEMENT ==========
+// ================== RÉSERVATIONS BACK-OFFICE ==================
+document.addEventListener('DOMContentLoaded', function() {
+    const reservationApiEndpoint = '../controllers/AdminReservationController.php';
+    const body = document.body;
 
-// Rafraîchir la liste des employés
-function refreshEmployeesList() {
-    console.log('Rafraîchissement de la liste des employés...');
-    
-    fetch(window.location.origin + '/Luxury-cars/controllers/UserController.php?action=get_users')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.users) {
-                updateEmployeesTable(data.users);
-                updateEmployeesStats(data.users.length);
-            }
-        })
-        .catch(error => console.error('Erreur rafraîchissement employés:', error));
-}
+    const reservationsTableBody = document.getElementById('reservationsTableBody');
 
-// Mettre à jour le tableau des employés
-function updateEmployeesTable(users) {
-    const tbody = document.querySelector('#employees-content table tbody');
-    if (!tbody) return;
+    // Modals
+    const createModal = document.getElementById('createReservationModal');
+    const viewModal = document.getElementById('viewReservationModal');
+    const editModal = document.getElementById('editReservationModal');
+    const deleteModal = document.getElementById('deleteReservationModal');
 
-    if (users.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="no-data">
-                    <i class="fas fa-users"></i>
-                    <p>Aucun employé trouvé</p>
-                </td>
-            </tr>
-        `;
+    // Buttons
+    const openCreateBtn = document.getElementById('openReservationModal');
+    const closeCreateBtn = document.getElementById('closeCreateReservationModal');
+    const cancelCreateBtn = document.getElementById('cancelCreateReservationModal');
+    const closeViewBtn = document.getElementById('closeViewReservationModal');
+    const closeViewFooterBtn = document.getElementById('closeViewReservationBtn');
+    const closeEditBtn = document.getElementById('closeEditReservationModal');
+    const cancelEditBtn = document.getElementById('cancelEditReservationModal');
+    const closeDeleteBtn = document.getElementById('closeDeleteReservationModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteReservationModal');
+
+    // Forms
+    const createForm = document.getElementById('createReservationForm');
+    const editForm = document.getElementById('editReservationForm');
+    const deleteForm = document.getElementById('deleteReservationForm');
+
+    // Server messages
+    const createServerMessage = document.getElementById('createReservationServerMessage');
+    const editServerMessage = document.getElementById('editReservationServerMessage');
+    const deleteServerMessage = document.getElementById('deleteReservationServerMessage');
+
+    // Summary fields
+    const createTotalDaysEl = document.getElementById('employeeReservationTotalDays');
+    const createTotalAmountEl = document.getElementById('employeeReservationTotalAmount');
+    const editTotalDaysEl = document.getElementById('editReservationTotalDays');
+    const editTotalAmountEl = document.getElementById('editReservationTotalAmount');
+
+    if (!reservationsTableBody) {
         return;
     }
 
-    let html = '';
-    users.forEach(user => {
-        const roleClass = user.role === 'manager' ? 'manager' : 'admin';
-        const date = new Date(user.created_at);
-        const formattedDate = date.toLocaleDateString('fr-FR');
-        
-        html += `
-            <tr>
-                <td>${user.id}</td>
-                <td>${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}</td>
-                <td>${user.email}</td>
-                <td>+212 ${user.phone}</td>
-                <td><span class="role-badge ${roleClass}">${user.role}</span></td>
-                <td>${formattedDate}</td>
-                <td>
-                    <button class="btn-action edit-employee-btn" 
-                            data-id="${user.id}"
-                            data-firstname="${user.first_name}"
-                            data-lastname="${user.last_name}"
-                            data-email="${user.email}"
-                            data-phone="${user.phone}"
-                            data-role="${user.role}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action delete-employee-btn" 
-                            data-id="${user.id}" 
-                            data-name="${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}"
-                            data-email="${user.email}"
-                            data-role="${user.role}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
+    const dateToday = new Date().toISOString().split('T')[0];
+    const createPickupInput = document.getElementById('employeeReservationPickupDate');
+    const createReturnInput = document.getElementById('employeeReservationReturnDate');
+    if (createPickupInput) createPickupInput.min = dateToday;
+    if (createReturnInput) createReturnInput.min = dateToday;
 
-    tbody.innerHTML = html;
-    
-    // Réattacher les événements aux nouveaux boutons
-    attachEmployeeEvents();
-}
-
-// Mettre à jour les statistiques des employés
-function updateEmployeesStats(count) {
-    const statElement = document.querySelector('.stat-card:nth-child(2) .stat-info h3');
-    if (statElement) {
-        statElement.textContent = count;
+    function openModal(modal) {
+        if (!modal) return;
+        modal.classList.add('active');
+        body.style.overflow = 'hidden';
     }
-}
 
-// Rafraîchir la liste des voitures
-function refreshCarsList() {
-    console.log('Rafraîchissement de la liste des voitures...');
-    
-    fetch(window.location.origin + '/Luxury-cars/controllers/CarController.php?action=get_cars')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.cars) {
-                updateCarsGrid(data.cars);
-                updateCarsStats(data.cars.length);
+    function closeModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('active');
+        body.style.overflow = 'auto';
+    }
+
+    function showServerMessage(target, type, message) {
+        if (!target) return;
+        target.textContent = message;
+        target.classList.remove('success', 'error');
+        target.classList.add(type);
+        target.style.display = 'block';
+    }
+
+    function hideServerMessage(target) {
+        if (!target) return;
+        target.style.display = 'none';
+        target.textContent = '';
+        target.classList.remove('success', 'error');
+    }
+
+    function parseReservationPayload(trigger) {
+        if (!trigger) return null;
+        try {
+            const payload = trigger.getAttribute('data-reservation');
+            return payload ? JSON.parse(payload) : null;
+        } catch (error) {
+            console.error('Impossible de parser la réservation', error);
+            return null;
+        }
+    }
+
+    function formatDateFr(value) {
+        if (!value) return '-';
+        const date = new Date(value + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return date.toLocaleDateString('fr-FR');
+    }
+
+    function formatAmount(value) {
+        const parsed = parseFloat(value || 0);
+        return parsed.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function getSelectedCarPrice(selectEl) {
+        if (!selectEl) return 0;
+        const option = selectEl.options[selectEl.selectedIndex];
+        return option ? parseFloat(option.getAttribute('data-price') || '0') : 0;
+    }
+
+    function calculateDuration(startValue, endValue) {
+        if (!startValue || !endValue) return 0;
+        const start = new Date(startValue + 'T00:00:00');
+        const end = new Date(endValue + 'T00:00:00');
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 0;
+        const diffTime = Math.abs(end - start);
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    function updateSummary(startInput, endInput, selectEl, daysEl, amountEl) {
+        const totalDays = calculateDuration(startInput?.value, endInput?.value);
+        const dailyPrice = getSelectedCarPrice(selectEl);
+        const totalAmount = totalDays * dailyPrice;
+
+        if (daysEl) daysEl.textContent = totalDays;
+        if (amountEl) amountEl.textContent = formatAmount(totalAmount);
+    }
+
+    function handleOutsideClose(modal, closeFn) {
+        if (!modal) return;
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeFn();
             }
+        });
+    }
+
+    // OPEN CREATE MODAL
+    if (openCreateBtn && createModal) {
+        openCreateBtn.addEventListener('click', function() {
+            if (createForm) createForm.reset();
+            if (createPickupInput) createPickupInput.value = dateToday;
+            if (createReturnInput) createReturnInput.value = dateToday;
+            updateSummary(createPickupInput, createReturnInput, document.getElementById('employeeReservationCar'), createTotalDaysEl, createTotalAmountEl);
+            hideServerMessage(createServerMessage);
+            openModal(createModal);
+        });
+    }
+
+    const closeCreateModal = () => {
+        if (createForm) createForm.reset();
+        updateSummary(createPickupInput, createReturnInput, document.getElementById('employeeReservationCar'), createTotalDaysEl, createTotalAmountEl);
+        hideServerMessage(createServerMessage);
+        closeModal(createModal);
+    };
+
+    [closeCreateBtn, cancelCreateBtn].forEach(btn => btn && btn.addEventListener('click', closeCreateModal));
+    handleOutsideClose(createModal, closeCreateModal);
+
+    const closeViewModalFn = () => closeModal(viewModal);
+    [closeViewBtn, closeViewFooterBtn].forEach(btn => btn && btn.addEventListener('click', closeViewModalFn));
+    handleOutsideClose(viewModal, closeViewModalFn);
+
+    const closeEditModalFn = () => {
+        hideServerMessage(editServerMessage);
+        closeModal(editModal);
+    };
+    [closeEditBtn, cancelEditBtn].forEach(btn => btn && btn.addEventListener('click', closeEditModalFn));
+    handleOutsideClose(editModal, closeEditModalFn);
+
+    const closeDeleteModalFn = () => {
+        hideServerMessage(deleteServerMessage);
+        closeModal(deleteModal);
+    };
+    [closeDeleteBtn, cancelDeleteBtn].forEach(btn => btn && btn.addEventListener('click', closeDeleteModalFn));
+    handleOutsideClose(deleteModal, closeDeleteModalFn);
+
+    // Summary updates on inputs
+    ['employeeReservationPickupDate', 'employeeReservationReturnDate', 'employeeReservationCar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', () => {
+                updateSummary(
+                    createPickupInput,
+                    createReturnInput,
+                    document.getElementById('employeeReservationCar'),
+                    createTotalDaysEl,
+                    createTotalAmountEl
+                );
+            });
+        }
+    });
+
+    ['editReservationPickupDate', 'editReservationReturnDate', 'editReservationCar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', () => {
+                updateSummary(
+                    document.getElementById('editReservationPickupDate'),
+                    document.getElementById('editReservationReturnDate'),
+                    document.getElementById('editReservationCar'),
+                    editTotalDaysEl,
+                    editTotalAmountEl
+                );
+            });
+        }
+    });
+
+    function populateViewModal(data) {
+        if (!data || !viewModal) return;
+        document.getElementById('viewReservationCode').textContent = `#${data.id}`;
+        document.getElementById('viewReservationClient').textContent = `${data.client_first_name ?? ''} ${data.client_last_name ?? ''}`.trim();
+        document.getElementById('viewReservationPhone').textContent = data.client_phone ? `+212 ${data.client_phone}` : '-';
+        document.getElementById('viewReservationCar').textContent = `${data.brand_name ?? ''} ${data.car_model ?? ''}`.trim();
+        document.getElementById('viewReservationPlate').textContent = data.license_plate ?? '-';
+        document.getElementById('viewReservationPeriod').textContent = `${formatDateFr(data.start_date)} → ${formatDateFr(data.end_date)}`;
+        document.getElementById('viewReservationTimes').textContent = `${data.start_time ?? '--:--'} → ${data.end_time ?? '--:--'}`;
+        document.getElementById('viewReservationAmount').textContent = `${formatAmount(data.total_amount)} €`;
+        document.getElementById('viewReservationStatus').textContent = data.status ? data.status.toUpperCase() : '-';
+        const createdBy = data.fait_par === 'Client'
+            ? 'Client'
+            : `${data.employee_first_name ?? ''} ${data.employee_last_name ?? ''}`.trim() || 'Employé';
+        document.getElementById('viewReservationCreatedBy').textContent = createdBy;
+        document.getElementById('viewReservationNotes').textContent = data.special_requests ? data.special_requests : 'Aucune note';
+        openModal(viewModal);
+    }
+
+    function populateEditModal(data) {
+        if (!data || !editModal) return;
+        document.getElementById('editReservationId').value = data.id;
+        document.getElementById('editReservationFaitPar').value = data.fait_par || 'Employé';
+        document.getElementById('editReservationClient').textContent = `${data.client_first_name ?? ''} ${data.client_last_name ?? ''}`.trim();
+        document.getElementById('editReservationPickupDate').value = data.start_date ?? '';
+        document.getElementById('editReservationReturnDate').value = data.end_date ?? '';
+        document.getElementById('editReservationPickupTime').value = data.start_time ?? '09:00';
+        document.getElementById('editReservationReturnTime').value = data.end_time ?? '09:00';
+        document.getElementById('editReservationStatus').value = data.status ?? 'pending';
+        document.getElementById('editReservationRequests').value = data.special_requests ?? '';
+
+        const carSelect = document.getElementById('editReservationCar');
+        if (carSelect) {
+            carSelect.value = data.car_id;
+        }
+
+        updateSummary(
+            document.getElementById('editReservationPickupDate'),
+            document.getElementById('editReservationReturnDate'),
+            carSelect,
+            editTotalDaysEl,
+            editTotalAmountEl
+        );
+
+        hideServerMessage(editServerMessage);
+        openModal(editModal);
+    }
+
+    function populateDeleteModal(data) {
+        if (!data || !deleteModal) return;
+        document.getElementById('deleteReservationId').value = data.id;
+        const labelClient = `${data.client_first_name ?? ''} ${data.client_last_name ?? ''}`.trim();
+        const labelCar = `${data.brand_name ?? ''} ${data.car_model ?? ''}`.trim();
+        document.getElementById('deleteReservationText').textContent = `Supprimer la réservation #${data.id} (${labelClient} • ${labelCar}) ?`;
+        hideServerMessage(deleteServerMessage);
+        openModal(deleteModal);
+    }
+
+    reservationsTableBody.addEventListener('click', function(e) {
+        const viewBtn = e.target.closest('.view-reservation-btn');
+        const editBtn = e.target.closest('.edit-reservation-btn');
+        const deleteBtn = e.target.closest('.delete-reservation-btn');
+
+        if (viewBtn) {
+            const data = parseReservationPayload(viewBtn);
+            populateViewModal(data);
+            return;
+        }
+        if (editBtn) {
+            const data = parseReservationPayload(editBtn);
+            populateEditModal(data);
+            return;
+        }
+        if (deleteBtn) {
+            const data = parseReservationPayload(deleteBtn);
+            populateDeleteModal(data);
+        }
+    });
+
+    function submitReservationForm(formEl, serverMessageEl, formData) {
+        if (!formEl) return;
+        const submitBtn = formEl.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.innerHTML : '';
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+        }
+
+        fetch(reservationApiEndpoint, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
         })
-        .catch(error => console.error('Erreur rafraîchissement voitures:', error));
-}
-
-// Mettre à jour la grille des voitures
-function updateCarsGrid(cars) {
-    const carsGrid = document.querySelector('.cars-grid');
-    if (!carsGrid) return;
-
-    if (cars.length === 0) {
-        carsGrid.innerHTML = `
-            <div class="no-data" style="grid-column: 1 / -1; text-align:center; padding:20px;">
-                <i class="fas fa-car"></i>
-                <p>Aucune voiture trouvée</p>
-            </div>
-        `;
-        return;
+            .then(async response => {
+                const data = await response.json().catch(() => ({ success: false, message: 'Réponse invalide' }));
+                return { ok: response.ok, status: response.status, data };
+            })
+            .then(({ ok, data }) => {
+                if (ok && data.success) {
+                    showServerMessage(serverMessageEl, 'success', data.message || 'Opération réalisée.');
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    showServerMessage(serverMessageEl, 'error', data.message || 'Une erreur est survenue.');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur réservation', error);
+                showServerMessage(serverMessageEl, 'error', 'Erreur réseau. Veuillez réessayer.');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
     }
 
-    let html = '';
-    cars.forEach(car => {
-        const imagePath = car.main_image_url ? '../public/' + car.main_image_url : '../public/images/car-placeholder.png';
-        const brand = car.brand_name || car.brand_id || '';
-        const model = car.model || '';
-        const title = `${brand} ${model}`.trim();
-        const year = car.year || '';
-        const category = car.category_name || '';
-        const price = car.daily_price ? Number(car.daily_price).toFixed(2) : '';
-        const status = car.status || 'Disponible';
-        
-        // Déterminer la classe CSS pour le statut
-        let statusClass = 'available';
-        if (status === 'réservé') statusClass = 'reserved';
-        else if (status === 'en maintenance') statusClass = 'maintenance';
-        else if (status === 'indisponible') statusClass = 'indisponible';
-
-        html += `
-            <div class="car-card">
-                <div class="car-image">
-                    <img src="${imagePath}" alt="${title}">
-                    <span class="car-status ${statusClass}">${status}</span>
-                </div>
-                <div class="car-info">
-                    <h3>${title || 'Voiture'}</h3>
-                    <p>${year} • ${category}</p>
-                    <div class="car-price">€${price}/jour</div>
-                </div>
-                <div class="car-actions">
-                    <button class="btn-action edit-car-btn" data-id="${car.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action delete-car-btn" data-id="${car.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-
-    carsGrid.innerHTML = html;
-    
-    // Réattacher les événements aux nouveaux boutons
-    initEditCarButtons();
-    attachCarDeleteEvents();
-}
-
-// Mettre à jour les statistiques des voitures
-function updateCarsStats(count) {
-    const statElement = document.querySelector('.stat-card:first-child .stat-info h3');
-    if (statElement) {
-        statElement.textContent = count;
-    }
-}
-
-// Réattacher les événements aux boutons d'employés
-function attachEmployeeEvents() {
-    // Réattacher les événements de modification
-    document.querySelectorAll('.edit-employee-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const employeeData = {
-                id: this.getAttribute('data-id'),
-                first_name: this.getAttribute('data-firstname'),
-                last_name: this.getAttribute('data-lastname'),
-                email: this.getAttribute('data-email'),
-                phone: this.getAttribute('data-phone'),
-                role: this.getAttribute('data-role')
-            };
-            openEditEmployeeModal(employeeData);
+    if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideServerMessage(createServerMessage);
+            const formData = new FormData(createForm);
+            formData.append('action', 'create_employee_reservation');
+            submitReservationForm(createForm, createServerMessage, formData);
         });
-    });
-
-    // Réattacher les événements de suppression
-    document.querySelectorAll('.delete-employee-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const employeeData = {
-                id: this.getAttribute('data-id'),
-                name: this.getAttribute('data-name'),
-                email: this.getAttribute('data-email'),
-                role: this.getAttribute('data-role')
-            };
-            openDeleteEmployeeModal(employeeData);
-        });
-    });
-}
-
-// Réattacher les événements de suppression des voitures
-function attachCarDeleteEvents() {
-    document.querySelectorAll('.delete-car-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const carId = this.getAttribute('data-id');
-            openDeleteCarModal(carId);
-        });
-    });
-}
-
-// Fonction pour ouvrir la modal d'édition d'employé
-function openEditEmployeeModal(employeeData) {
-    const editModal = document.getElementById('editEmployeeModal');
-    if (!editModal) return;
-
-    // Remplir le formulaire avec les données actuelles
-    document.getElementById('editEmployeeId').value = employeeData.id;
-    document.getElementById('editFirstName').value = employeeData.first_name;
-    document.getElementById('editLastName').value = employeeData.last_name;
-    document.getElementById('editEmail').value = employeeData.email;
-    document.getElementById('editPhone').value = employeeData.phone;
-    document.getElementById('editRole').value = employeeData.role;
-    
-    // Réinitialiser les champs mot de passe
-    document.getElementById('editPassword').value = '';
-    document.getElementById('editConfirmPassword').value = '';
-
-    // Effacer les erreurs
-    const serverMsg = document.getElementById('editFormServerMessage');
-    if (serverMsg) {
-        serverMsg.style.display = 'none';
-        serverMsg.textContent = '';
-        serverMsg.className = 'server-message';
     }
 
-    // Afficher la modal
-    editModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// Fonction pour ouvrir la modal de suppression d'employé
-function openDeleteEmployeeModal(employeeData) {
-    const deleteModal = document.getElementById('deleteEmployeeModal');
-    if (!deleteModal) return;
-
-    // Remplir les informations dans la modal
-    document.getElementById('deleteEmployeeName').textContent = employeeData.name;
-    document.getElementById('deleteEmployeeEmail').textContent = employeeData.email;
-    document.getElementById('deleteEmployeeRole').textContent = employeeData.role;
-
-    // Stocker les données de l'employé à supprimer
-    window.currentEmployeeToDelete = employeeData;
-
-    // Afficher la modal
-    deleteModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Clear server message when opening
-    const deleteServerMsg = document.getElementById('deleteEmployeeServerMessage');
-    if (deleteServerMsg) {
-        deleteServerMsg.style.display = 'none';
-        deleteServerMsg.textContent = '';
-        deleteServerMsg.classList.remove('error', 'success');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideServerMessage(editServerMessage);
+            const formData = new FormData(editForm);
+            formData.append('action', 'update_reservation');
+            submitReservationForm(editForm, editServerMessage, formData);
+        });
     }
-}
 
-
-
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideServerMessage(deleteServerMessage);
+            const formData = new FormData(deleteForm);
+            formData.append('action', 'delete_reservation');
+            submitReservationForm(deleteForm, deleteServerMessage, formData);
+        });
+    }
+});

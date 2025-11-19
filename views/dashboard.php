@@ -7,6 +7,7 @@ require_once '../models/User.php';
 
 // Charger le modèle Car pour afficher les voitures
 require_once '../models/Car.php';
+require_once '../models/Reservation.php';
 
 $userModel = new User($pdo);
 $auth = new AuthController($pdo);
@@ -20,8 +21,21 @@ $allUsers = $userModel->getAllUsers();
 
 // Récupérer les voitures pour l'affichage
 $carModel = new Car($pdo);
+$reservationModel = new Reservation($pdo);
+$reservationModel->autoActivateReservations();
 $allCars = $carModel->getAllCars();
 $totalCars = count($allCars);
+$reservations = $reservationModel->getAllReservationsWithDetails();
+$reservationStats = $reservationModel->getReservationStats();
+$reservationStatusDefaults = [
+    'pending' => 0,
+    'confirmed' => 0,
+    'active' => 0,
+    'completed' => 0,
+    'cancelled' => 0
+];
+$reservationStatusCounts = array_merge($reservationStatusDefaults, $reservationStats);
+$totalReservations = count($reservations);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -224,7 +238,7 @@ $totalCars = count($allCars);
                             <tbody>
                             <?php if (!empty($allUsers)): ?>
                             <?php foreach ($allUsers as $user): ?>
-                                <tr>
+                                <tr class="employee-row">
                                     <td><?php echo htmlspecialchars($user['id']); ?></td>
                                     <td><?php echo strtolower($user['first_name'] .' '. $user['last_name']); ?></td>
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
@@ -264,6 +278,15 @@ $totalCars = count($allCars);
                 <?php endif; ?>
                             </tbody>
                         </table>
+                        <div class="pagination-controls" data-pagination="employees">
+                            <button class="pagination-btn" data-pagination-prev="employees" type="button">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="pagination-info" data-pagination-info="employees">1/1</span>
+                            <button class="pagination-btn" data-pagination-next="employees" type="button">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -559,20 +582,30 @@ $totalCars = count($allCars);
                             </button>
                         </div>
                     </div>
+                    <div class="section-filters">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="carSearchInput" placeholder="Rechercher par plaque ou marque...">
+                        </div>
+                    </div>
                     <div class="cars-grid">
                     <?php if (!empty($allCars)): ?>
                         <?php foreach ($allCars as $car): ?>
                             <?php
                                 $imagePath = !empty($car['main_image_url']) ? '../public/' . $car['main_image_url'] : '../public/images/car-placeholder.png';
-                                $brand = htmlspecialchars($car['brand_name'] ?? $car['brand_id'] ?? '');
+                                $brandNameRaw = strtolower($car['brand_name'] ?? '');
+                                $brandDisplay = htmlspecialchars($car['brand_name'] ?? $car['brand_id'] ?? '');
                                 $model = htmlspecialchars($car['model'] ?? '');
-                                $title = trim($brand . ' ' . $model);
+                                $title = trim($brandDisplay . ' ' . $model);
                                 $year = htmlspecialchars($car['year'] ?? '');
                                 $category = htmlspecialchars($car['category_name'] ?? '');
                                 $price = isset($car['daily_price']) ? number_format((float)$car['daily_price'], 2) : '';
                                 $status = htmlspecialchars($car['status'] ?? 'Disponible');
+                                $licensePlateRaw = strtolower($car['license_plate'] ?? '');
                             ?>
-                            <div class="car-card">
+                            <div class="car-card"
+                                 data-license="<?php echo htmlspecialchars($licensePlateRaw); ?>"
+                                 data-brand-name="<?php echo htmlspecialchars($brandNameRaw); ?>">
                                 <div class="car-image">
                                     <img src="<?php echo $imagePath; ?>" alt="<?php echo $title; ?>">
                                     <?php if ($status==='réservé'):?>
@@ -603,6 +636,15 @@ $totalCars = count($allCars);
                         </div>
                     <?php endif; ?>
                     </div>
+                    <div class="pagination-controls" data-pagination="cars">
+                        <button class="pagination-btn" data-pagination-prev="cars" type="button">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="pagination-info" data-pagination-info="cars">1/1</span>
+                        <button class="pagination-btn" data-pagination-next="cars" type="button">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 
 
@@ -623,7 +665,7 @@ $totalCars = count($allCars);
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div class="stat-info">
-                <h3 id="totalReservations">0</h3>
+                <h3 id="totalReservations"><?php echo $totalReservations; ?></h3>
                 <p>Total Réservations</p>
             </div>
         </div>
@@ -632,7 +674,7 @@ $totalCars = count($allCars);
                 <i class="fas fa-clock"></i>
             </div>
             <div class="stat-info">
-                <h3 id="pendingReservations">0</h3>
+                <h3 id="pendingReservations"><?php echo $reservationStatusCounts['pending']; ?></h3>
                 <p>En Attente</p>
             </div>
         </div>
@@ -641,7 +683,7 @@ $totalCars = count($allCars);
                 <i class="fas fa-check-circle"></i>
             </div>
             <div class="stat-info">
-                <h3 id="confirmedReservations">0</h3>
+                <h3 id="confirmedReservations"><?php echo $reservationStatusCounts['confirmed']; ?></h3>
                 <p>Confirmées</p>
             </div>
         </div>
@@ -650,12 +692,18 @@ $totalCars = count($allCars);
                 <i class="fas fa-car"></i>
             </div>
             <div class="stat-info">
-                <h3 id="activeReservations">0</h3>
+                <h3 id="activeReservations"><?php echo $reservationStatusCounts['active']; ?></h3>
                 <p>Actives</p>
             </div>
         </div>
     </div>
 
+<div class="section-filters">
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="reservationSearchInput" placeholder="Rechercher par ID, téléphone client ou plaque...">
+    </div>
+</div>
 <!-- Tableau des réservations -->
 <div class="table-container">
     <table class="data-table">
@@ -673,30 +721,278 @@ $totalCars = count($allCars);
             </tr>
         </thead>
         <tbody id="reservationsTableBody">
-            <tr>
-                <td></td>
-                 <td></td>
-                 <td></td>
-                 <td></td>
-                 <td></td>
-                 <td></td>
-                 <td></td>
-                 <td></td>       
-                <td>
-                    <button class="btn-action view-reservation-btn" 
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-action edit-reservation-btn" 
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action delete-reservation-btn" 
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
+            <?php if (!empty($reservations)): ?>
+                <?php foreach ($reservations as $reservation): 
+                    $reservationData = htmlspecialchars(json_encode($reservation), ENT_QUOTES, 'UTF-8');
+                    $clientFullName = strtolower($reservation['client_first_name'] . ' ' . $reservation['client_last_name']);
+                    $carLabel = trim(($reservation['brand_name'] ?? 'Marque') . ' ' . $reservation['car_model']);
+                    $startDate = (new DateTime($reservation['start_date']))->format('d/m/Y');
+                    $endDate = (new DateTime($reservation['end_date']))->format('d/m/Y');
+                    $statusClass = strtolower($reservation['status']);
+                    $statusLabel = ucfirst($reservation['status']);
+                    $totalAmount = number_format((float)$reservation['total_amount'], 2, ',', ' ');
+                    $createdBy = $reservation['fait_par'] === 'Client'
+                        ? 'Client'
+                        : trim(($reservation['employee_first_name'] ?? '') . ' ' . ($reservation['employee_last_name'] ?? ''));
+                ?>
+                <tr class="reservation-row"
+                    data-reservation-id="<?php echo htmlspecialchars($reservation['id']); ?>"
+                    data-client-phone="<?php echo htmlspecialchars($reservation['client_phone']); ?>"
+                    data-car-license="<?php echo htmlspecialchars(strtolower($reservation['license_plate'])); ?>">
+                    <td>#<?php echo $reservation['id']; ?></td>
+                    <td><?php echo htmlspecialchars($clientFullName); ?><br><small>+212 <?php echo htmlspecialchars($reservation['client_phone']); ?></small></td>
+                    <td><?php echo htmlspecialchars($carLabel); ?><br><small><?php echo htmlspecialchars($reservation['license_plate']); ?></small></td>
+                    <td><?php echo $startDate; ?> <small><?php echo htmlspecialchars($reservation['start_time']); ?></small></td>
+                    <td><?php echo $endDate; ?> <small><?php echo htmlspecialchars($reservation['end_time']); ?></small></td>
+                    <td><?php echo $totalAmount; ?> €</td>
+                    <td><span class="status-badge <?php echo htmlspecialchars($statusClass); ?>"><?php echo htmlspecialchars($statusLabel); ?></span></td>
+                    <td><?php echo htmlspecialchars($createdBy ?: 'Employé'); ?></td>
+                    <td>
+                        <button class="btn-action view-reservation-btn" data-reservation="<?php echo $reservationData; ?>">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-action edit-reservation-btn" data-reservation="<?php echo $reservationData; ?>">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-action delete-reservation-btn" data-reservation="<?php echo $reservationData; ?>">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="9" class="no-data">
+                        <i class="fas fa-calendar"></i>
+                        <p>Aucune réservation trouvée</p>
+                    </td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
+    <div class="pagination-controls" data-pagination="reservations">
+        <button class="pagination-btn" data-pagination-prev="reservations" type="button">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="pagination-info" data-pagination-info="reservations">1/1</span>
+        <button class="pagination-btn" data-pagination-next="reservations" type="button">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
 </div>
+</div>
+
+<!-- Modals Réservations -->
+<div id="createReservationModal" class="employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-calendar-plus"></i> Nouvelle réservation</h2>
+            <button class="modal-close" id="closeCreateReservationModal" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="createReservationServerMessage" class="server-message" style="display:none;margin:10px 20px;padding:10px;border-radius:4px;"></div>
+        <div class="modal-body">
+            <form id="createReservationForm" novalidate>
+                <div class="form-group">
+                    <label for="employeeClientFirstName">Prénom du client <span style="color:#e74c3c;">*</span></label>
+                    <input type="text" id="employeeClientFirstName" name="client_first_name" class="form-control" placeholder="Jean" required>
+                </div>
+                <div class="form-group">
+                    <label for="employeeClientLastName">Nom du client <span style="color:#e74c3c;">*</span></label>
+                    <input type="text" id="employeeClientLastName" name="client_last_name" class="form-control" placeholder="Dupont" required>
+                </div>
+                <div class="form-group">
+                    <label for="employeeClientPhone">Téléphone du client <span style="color:#e74c3c;">*</span></label>
+                    <div class="phone-field">
+                        <span class="phone-prefix">+212</span>
+                        <input type="tel" id="employeeClientPhone" name="client_phone" class="form-control" placeholder="612345678" pattern="[0-9]{9}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="employeeReservationCar">Voiture <span style="color:#e74c3c;">*</span></label>
+                    <select id="employeeReservationCar" name="car_id" class="form-control" required>
+                        <option value="">-- Sélectionnez une voiture --</option>
+                        <?php foreach ($allCars as $car): ?>
+                            <option value="<?php echo $car['id']; ?>" data-price="<?php echo $car['daily_price']; ?>">
+                                <?php echo htmlspecialchars(($car['brand_name'] ?? '') . ' ' . $car['model'] . ' • ' . ($car['year'] ?? '')); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="name-fields">
+                    <div class="form-group">
+                        <label for="employeeReservationPickupDate">Date début <span style="color:#e74c3c;">*</span></label>
+                        <input type="date" id="employeeReservationPickupDate" name="pickup_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeReservationPickupTime">Heure début</label>
+                        <input type="time" id="employeeReservationPickupTime" name="pickup_time" class="form-control" value="09:00">
+                    </div>
+                </div>
+                <div class="name-fields">
+                    <div class="form-group">
+                        <label for="employeeReservationReturnDate">Date fin <span style="color:#e74c3c;">*</span></label>
+                        <input type="date" id="employeeReservationReturnDate" name="return_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeReservationReturnTime">Heure fin</label>
+                        <input type="time" id="employeeReservationReturnTime" name="return_time" class="form-control" value="09:00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="employeeReservationStatus">Statut</label>
+                    <select id="employeeReservationStatus" name="status" class="form-control">
+                        <option value="pending">En attente</option>
+                        <option value="confirmed">Confirmée</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Terminée</option>
+                        <option value="cancelled">Annulée</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="employeeReservationRequests">Notes internes</label>
+                    <textarea id="employeeReservationRequests" name="special_requests" class="form-control" rows="3" placeholder="Notes, exigences spécifiques..."></textarea>
+                </div>
+                <div class="reservation-summary">
+                    <p><strong>Durée:</strong> <span id="employeeReservationTotalDays">0</span> jour(s)</p>
+                    <p><strong>Total estimé:</strong> <span id="employeeReservationTotalAmount">0</span> €</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelCreateReservationModal">Annuler</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Créer la réservation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="viewReservationModal" class="employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-eye"></i> Détails de la réservation</h2>
+            <button class="modal-close" id="closeViewReservationModal" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="reservation-details">
+                <p><strong>Réservation:</strong> <span id="viewReservationCode">-</span></p>
+                <p><strong>Client:</strong> <span id="viewReservationClient">-</span></p>
+                <p><strong>Téléphone:</strong> <span id="viewReservationPhone">-</span></p>
+                <p><strong>Voiture:</strong> <span id="viewReservationCar">-</span></p>
+                <p><strong>Plaque:</strong> <span id="viewReservationPlate">-</span></p>
+                <p><strong>Période:</strong> <span id="viewReservationPeriod">-</span></p>
+                <p><strong>Horaires:</strong> <span id="viewReservationTimes">-</span></p>
+                <p><strong>Total:</strong> <span id="viewReservationAmount">-</span></p>
+                <p><strong>Statut:</strong> <span id="viewReservationStatus">-</span></p>
+                <p><strong>Créé par:</strong> <span id="viewReservationCreatedBy">-</span></p>
+                <p><strong>Notes:</strong></p>
+                <p id="viewReservationNotes" style="white-space:pre-wrap;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;">-</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="closeViewReservationBtn">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editReservationModal" class="employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-edit"></i> Modifier la réservation</h2>
+            <button class="modal-close" id="closeEditReservationModal" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="editReservationServerMessage" class="server-message" style="display:none;margin:10px 20px;padding:10px;border-radius:4px;"></div>
+        <div class="modal-body">
+            <form id="editReservationForm" novalidate>
+                <input type="hidden" id="editReservationId" name="reservation_id">
+                <input type="hidden" id="editReservationFaitPar" name="fait_par">
+                <div class="form-group">
+                    <label>Client</label>
+                    <div id="editReservationClient" class="readonly-field"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editReservationCar">Voiture <span style="color:#e74c3c;">*</span></label>
+                    <select id="editReservationCar" name="car_id" class="form-control" required>
+                        <option value="">-- Sélectionnez une voiture --</option>
+                        <?php foreach ($allCars as $car): ?>
+                            <option value="<?php echo $car['id']; ?>" data-price="<?php echo $car['daily_price']; ?>">
+                                <?php echo htmlspecialchars(($car['brand_name'] ?? '') . ' ' . $car['model'] . ' • ' . ($car['year'] ?? '')); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="name-fields">
+                    <div class="form-group">
+                        <label for="editReservationPickupDate">Date début <span style="color:#e74c3c;">*</span></label>
+                        <input type="date" id="editReservationPickupDate" name="pickup_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editReservationPickupTime">Heure début</label>
+                        <input type="time" id="editReservationPickupTime" name="pickup_time" class="form-control" value="09:00">
+                    </div>
+                </div>
+                <div class="name-fields">
+                    <div class="form-group">
+                        <label for="editReservationReturnDate">Date fin <span style="color:#e74c3c;">*</span></label>
+                        <input type="date" id="editReservationReturnDate" name="return_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editReservationReturnTime">Heure fin</label>
+                        <input type="time" id="editReservationReturnTime" name="return_time" class="form-control" value="09:00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editReservationStatus">Statut</label>
+                    <select id="editReservationStatus" name="status" class="form-control">
+                        <option value="pending">En attente</option>
+                        <option value="confirmed">Confirmée</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Terminée</option>
+                        <option value="cancelled">Annulée</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editReservationRequests">Notes internes</label>
+                    <textarea id="editReservationRequests" name="special_requests" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="reservation-summary">
+                    <p><strong>Durée:</strong> <span id="editReservationTotalDays">0</span> jour(s)</p>
+                    <p><strong>Total estimé:</strong> <span id="editReservationTotalAmount">0</span> €</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditReservationModal">Annuler</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="deleteReservationModal" class="employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle"></i> Supprimer la réservation</h2>
+            <button class="modal-close" id="closeDeleteReservationModal" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="deleteReservationServerMessage" class="server-message" style="display:none;margin:10px 20px;padding:10px;border-radius:4px;"></div>
+        <div class="modal-body">
+            <form id="deleteReservationForm">
+                <input type="hidden" id="deleteReservationId" name="reservation_id">
+                <p id="deleteReservationText" style="margin-bottom:20px;">Confirmez-vous la suppression ?</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelDeleteReservationModal">Annuler</button>
+                    <button type="submit" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
                 <!-- Settings Content -->

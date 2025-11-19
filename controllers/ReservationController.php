@@ -108,6 +108,7 @@ class ReservationController {
             $reservationId = $this->reservationModel->createReservation([
                 'client_id' => $clientId,
                 'car_id' => $carId,
+                'employee_id' => null,
                 'fait_par' => 'Client',
                 'start_date' => $pickupDate,
                 'end_date' => $returnDate,
@@ -115,7 +116,8 @@ class ReservationController {
                 'end_time' => $returnTime,
                 'total_days' => $totalDays,
                 'total_amount' => $totalAmount,
-                'special_requests' => $specialRequests
+                'special_requests' => $specialRequests,
+                'status' => 'pending'
             ]);
             
             echo json_encode([
