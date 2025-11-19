@@ -342,114 +342,106 @@ function showBookingMessage(message, type = 'info') {
     messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Gestion du modal de réservation
-document.addEventListener('DOMContentLoaded', function() {
-    const bookingModal = document.getElementById('bookingModal');
-    const bookingModalClose = document.getElementById('bookingModalClose');
-    const bookingForm = document.getElementById('bookingForm');
-    const bookingBtn = document.querySelector('.booking-btn');
-
-    if (bookingBtn) {
-        bookingBtn.addEventListener('click', function() {
-            bookingModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-    }
-
-    bookingModalClose.addEventListener('click', function() {
-        bookingModal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    });
-
-    bookingModal.addEventListener('click', function(e) {
-        if (e.target === bookingModal) {
+ // Gestion du modal de réservation
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookingModal = document.getElementById('bookingModal');
+        const bookingModalClose = document.getElementById('bookingModalClose');
+        const bookingForm = document.getElementById('bookingForm');
+        const bookingBtn = document.querySelector('.booking-btn');
+        
+        // Ouvrir le modal
+        if (bookingBtn) {
+            bookingBtn.addEventListener('click', function() {
+                bookingModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Empêcher le défilement
+            });
+        }
+        
+        // Fermer le modal
+        bookingModalClose.addEventListener('click', function() {
             bookingModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = 'auto'; // Rétablir le défilement
+        });
+        
+        // Fermer le modal en cliquant à l'extérieur
+        bookingModal.addEventListener('click', function(e) {
+            if (e.target === bookingModal) {
+                bookingModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        const basePathMeta = document.querySelector('meta[name="app-base-path"]');
+        const metaBasePath = basePathMeta ? basePathMeta.getAttribute('content') : '';
+        const normalizedBasePath = metaBasePath ? (metaBasePath.startsWith('/') ? metaBasePath : `/${metaBasePath}`) : '';
+        const reservationEndpoint = `${window.location.origin}${normalizedBasePath}/controllers/ReservationController.php`.replace(/([^:]\/)\/+/g, '$1');
+
+        // Remplacer cette partie dans main.js
+bookingForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Afficher le message de chargement
+    showBookingMessage('Traitement de votre réservation en cours...', 'info');
+    
+    // Validation simple
+    const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
+    const returnDate = new Date(document.getElementById('booking-return-date').value);
+    
+    if (returnDate <= pickupDate) {
+        showBookingMessage('La date de restitution doit être postérieure à la date de prise en charge.', 'error');
+        return;
+    }
+    
+    // Préparer les données du formulaire
+    const formData = new FormData(bookingForm);
+    formData.append('action', 'create_reservation');
+    
+    console.log('Envoi des données:', Object.fromEntries(formData));
+    
+    // Envoyer la requête AJAX
+    fetch(reservationEndpoint, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Statut de la réponse:', response.status);
+        if (!response.ok) {
+            throw new Error('Erreur HTTP: ' + response.status);
         }
-    });
-
-    // Gestion de la soumission du formulaire de réservation
-    bookingForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const submitBtn = bookingForm.querySelector('.booking-form-submit');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Traitement en cours...';
-        submitBtn.disabled = true;
-
-        const messageDiv = document.getElementById('booking-messages');
-        messageDiv.style.display = 'none';
-
-        const pickupDate = new Date(document.getElementById('booking-pickup-date').value);
-        const returnDate = new Date(document.getElementById('booking-return-date').value);
-
-        if (returnDate <= pickupDate) {
-            showBookingMessage('La date de restitution doit être postérieure à la date de prise en charge.', 'error');
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            return;
-        }
-
-        const formData = new FormData(bookingForm);
-        const reservationData = {
-            first_name: formData.get('first-name'),
-            last_name: formData.get('last-name'),
-            phone: formData.get('Telephone'),
-            email: formData.get('email'),
-            car_id: formData.get('car_id'),
-            start_date: formData.get('pickup-date'),
-            end_date: formData.get('return-date'),
-            start_time: formData.get('pickup-time'),
-            end_time: formData.get('return-time'),
-            special_requests: formData.get('special-requests')
-        };
-
-        fetch('./controllers/ReservationController.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'create_reservation',
-                data: reservationData
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showBookingMessage(`
-                    <div class="booking-success">
-                        <i class="fas fa-check-circle"></i>
-                        <h4>Réservation confirmée !</h4>
-                        <p>${data.message}</p>
-                        <p><strong>Numéro de réservation:</strong> #${data.reservation_id}</p>
-                        <p>Nous vous contacterons dans les plus brefs délais.</p>
-                    </div>
-                `, 'success');
-                
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse reçue:', data);
+        if (data.success) {
+            showBookingMessage(data.message, 'success');
+            
+            // Réinitialiser le formulaire après 3 secondes
+            setTimeout(() => {
                 bookingForm.reset();
                 document.getElementById('booking-duration').textContent = '0';
                 document.getElementById('booking-total').textContent = '0';
                 
+                // Fermer le modal après succès
                 setTimeout(() => {
                     bookingModal.classList.remove('active');
                     document.body.style.overflow = 'auto';
-                    messageDiv.style.display = 'none';
-                }, 5000);
-                
-            } else {
-                showBookingMessage(data.message, 'error');
-            }
-        })
-        .catch(error => {
-            showBookingMessage('Une erreur est survenue lors de la réservation. Veuillez réessayer.', 'error');
-        })
-        .finally(() => {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        });
+                }, 2000);
+            }, 3000);
+        } else {
+            showBookingMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur complète:', error);
+        showBookingMessage('Une erreur est survenue lors de la réservation. Détails: ' + error.message, 'error');
     });
 });
+        
+        // Définir la date minimale comme aujourd'hui
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('booking-pickup-date').min = today;
+        document.getElementById('booking-return-date').min = today;
+    });
 
 // SYSTÈME DE FILTRAGE COMPLET
 document.addEventListener('DOMContentLoaded', function() {
@@ -643,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('status', filters.status);
         }
 
-        fetch('./controllers/CarController.php', {
+        fetch('../controllers/CarController.php', {
             method: 'POST',
             body: formData
         })
@@ -705,3 +697,5 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pickupDate) pickupDate.addEventListener('change', calculateBooking);
     if (returnDate) returnDate.addEventListener('change', calculateBooking);
 });
+
+

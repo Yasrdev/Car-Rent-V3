@@ -1,9 +1,15 @@
+<?php
+$documentRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/');
+$projectDirectory = str_replace('\\', '/', realpath(__DIR__ . '/..'));
+$appBasePath = rtrim(str_replace($documentRoot, '', $projectDirectory), '/');
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BARIZ CARS</title>
+    <meta name="app-base-path" content="<?php echo $appBasePath; ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <!-- Favicon for modern browsers -->
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/fav-icon.png">
@@ -23,7 +29,7 @@
 <div id="content">
 <!-- Navbar desktop (visible seulement sur desktop) -->
 <nav class="navbar" id="navbar">
-  <a href="index.html">
+  <a href="index.php">
     <img src="././public/images/bariz-logo.png" alt="Logo BARIZ CARS" id="logo">
   </a>
   <button class="burger" id="burger">
@@ -38,7 +44,7 @@
 </nav>
 <div class="fullscreen-menu" id="fullscreenMenu">
   <ul>
-    <li><a href="index.php?page=home">Accueil</a></li>
+    <li><a href="index.php">Accueil</a></li>
     <li><a href="index.php?page=Voitures">Voitures</a></li>
     <li><a href="index.php?page=A-propos">À propos</a></li>
     <li><a href="index.php?page=home#Contact">Contact</a></li>

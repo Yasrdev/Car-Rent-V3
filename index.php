@@ -537,11 +537,10 @@ if ($car['status'] === 'réservé') {
             <i class="fas fa-times"></i>
         </button>
         <h2 class="booking-modal-title">RÉSERVER CETTE VOITURE</h2>
-        <!-- Zone des messages -->
-        <div id="booking-messages" class="booking-messages" style="display: none;">
-            <div id="booking-message-content" class="booking-message-content"></div>
-        </div>
         <form id="bookingForm">
+            <div class="booking-messages" id="booking-messages" style="display: none;">
+                <div id="booking-message-content"></div>
+            </div>
             <input type="hidden" name="car_id" value="<?php echo $car_id; ?>">
             <input type="hidden" name="car_model" value="<?php echo htmlspecialchars($brand['name'] . ' ' . $car['model']); ?>">
             <input type="hidden" name="daily_price" value="<?php echo $car['daily_price']; ?>">
@@ -562,14 +561,14 @@ if ($car['status'] === 'réservé') {
                     <label for="booking-pickup-date" class="booking-form-label booking-required">Date de prise en charge</label>
                     <div class="date-input-container">
                         <input type="date" id="booking-pickup-date" class="booking-form-input date-time-input" name="pickup-date" required>
-                        <i class="fas fa-calendar-alt date-icon"></i>
+
                     </div>
                 </div>
                 <div class="booking-form-group">
                     <label for="booking-pickup-time" class="booking-form-label booking-required">Heure de prise en charge</label>
                     <div class="time-input-container">
                         <input type="time" id="booking-pickup-time" class="booking-form-input date-time-input" name="pickup-time" required>
-                        <i class="fas fa-clock time-icon"></i>
+
                     </div>
                 </div>
             </div>
@@ -579,14 +578,13 @@ if ($car['status'] === 'réservé') {
                     <label for="booking-return-date" class="booking-form-label booking-required">Date de restitution</label>
                     <div class="date-input-container">
                         <input type="date" id="booking-return-date" class="booking-form-input date-time-input" name="return-date" required>
-                        <i class="fas fa-calendar-alt date-icon"></i>
                     </div>
                 </div>
                 <div class="booking-form-group">
                     <label for="booking-return-time" class="booking-form-label booking-required">Heure de restitution</label>
                     <div class="time-input-container">
                         <input type="time" id="booking-return-time" class="booking-form-input date-time-input" name="return-time" required>
-                        <i class="fas fa-clock time-icon"></i>
+
                     </div>
                 </div>
             </div>
@@ -594,11 +592,6 @@ if ($car['status'] === 'réservé') {
             <div class="booking-form-group">
                 <label for="booking-driver-Telephone" class="booking-form-label booking-required">Téléphone</label>
                 <input type="tel" id="booking-driver-Telephone" class="booking-form-input" name="Telephone" required>
-            </div>
-            
-            <div class="booking-form-group">
-                <label for="booking-email" class="booking-form-label booking-required">Email</label>
-                <input type="email" id="booking-email" class="booking-form-input" name="email" required>
             </div>
             
             <div class="booking-form-group">
@@ -620,52 +613,7 @@ if ($car['status'] === 'réservé') {
         </form>
     </div>
 </div>
-<script>
-// Initialiser la galerie quand la page est complètement chargée
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM chargé, vérification de la galerie...');
-    
-    // Attendre que tous les éléments soient rendus
-    setTimeout(function() {
-        if (document.querySelector('.gallery-page')) {
-            console.log('Page galerie détectée, initialisation...');
-            initGallery();
-        } else {
-            console.log('Page galerie non détectée');
-        }
-    }, 100);
-    
-    // Calculer la durée et le total de la réservation
-    function calculateBooking() {
-        const pickupDateInput = document.getElementById('booking-pickup-date');
-        const returnDateInput = document.getElementById('booking-return-date');
-        
-        if (pickupDateInput && returnDateInput) {
-            const pickupDate = new Date(pickupDateInput.value);
-            const returnDate = new Date(returnDateInput.value);
-            
-            if (pickupDate && returnDate && returnDate > pickupDate) {
-                const duration = Math.ceil((returnDate - pickupDate) / (1000 * 60 * 60 * 24));
-                const dailyPrice = <?php echo $car['daily_price']; ?>;
-                const total = duration * dailyPrice;
-                
-                document.getElementById('booking-duration').textContent = duration;
-                document.getElementById('booking-total').textContent = total.toLocaleString('fr-FR');
-            } else {
-                document.getElementById('booking-duration').textContent = '0';
-                document.getElementById('booking-total').textContent = '0';
-            }
-        }
-    }
-    
-    // Écouter les changements de dates
-    const pickupDate = document.getElementById('booking-pickup-date');
-    const returnDate = document.getElementById('booking-return-date');
-    
-    if (pickupDate) pickupDate.addEventListener('change', calculateBooking);
-    if (returnDate) returnDate.addEventListener('change', calculateBooking);
-});
-</script>
+
 <?php elseif ($page == 'A-propos') :?>
 <!-- Section Hero -->
 <section class="hero-about">
